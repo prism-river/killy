@@ -5,7 +5,7 @@ EmptyContainerSpace = {}
 -- sometimes "start" events arrive before "create" ones
 -- in this case, we just ignore the update
 function updateTableRecordContainer(id,name,content)
-  LOG("Update tablet record container with ID: " .. id .. " content: " .. content)
+  LOG("Update tablet record container with ID: " .. id .. " content: " .. tostring(content))
   -- first pass, to see if the container is
   -- already displayed (maybe with another state)
   for i=1, table.getn(TableRecords)
@@ -39,7 +39,7 @@ function updateTableRecordContainer(id,name,content)
 
   LOG("create a new tablet record container")
   local container = NewTableRecordContainer()
-  container:init(x,CONTAINER_START_Z)
+  container:init(x,TABLE_AREA_START_Z)
   container:setInfos(id,name,content)
   container:addGround()
   container:display()

@@ -28,7 +28,7 @@ TCP_CLIENT = {
 
     -- retry to establish connection
     LOG("retry cNetwork:Connect")
-    cNetwork:Connect("127.0.0.1",25566,TCP_CLIENT)
+    cNetwork:Connect("10.1.4.12",25566,TCP_CLIENT)
   end,
 
   OnReceivedData = function (TCPConn, Data)
@@ -61,7 +61,7 @@ TCP_CLIENT = {
 
     -- retry to establish connection
     LOG("retry cNetwork:Connect")
-    cNetwork:Connect("127.0.0.1",25566,TCP_CLIENT)
+    cNetwork:Connect("10.1.4.12",25566,TCP_CLIENT)
   end,
 }
 
@@ -96,6 +96,13 @@ end
 
 function handleTableEvent(event)
   -- TODO
+  LOG("handleTableEvent")
+  updateTableRecordContainer(0, "No-name", event.person.columns)
+  for i=1, table.getn(event.person.data)
+  do
+    updateTableRecordContainer(i, "No-name", event.person.data[i])
+  end
+  LOG("handleTableEvent End")
 end
 
 function handleMonitorEvent(event)

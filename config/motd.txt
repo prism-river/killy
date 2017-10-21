@@ -1,5 +1,5 @@
-@9Welcome to Dockercraft!
-@9https://github.com/docker/dockercraft
+@9Welcome to Killy!
+@9https://github.com/prism-river/killy
 @cWarning: Use on your local machine only
-@cDockercraft is not safe for use on production servers
-@9Type /docker to use docker CLI commands!
+@Killy is not safe for use on production servers
+@9Type /killy to use CLI commands!
