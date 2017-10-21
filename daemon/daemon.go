@@ -8,7 +8,6 @@ import (
 	"io"
 	"net"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
@@ -190,37 +189,12 @@ func (d *Daemon) StartMonitoringEvents() {
 
 			res := make([]Table, 0)
 			for _, tableName := range tables {
-				rows, err := db.Query("SELECT * FROM " + tableName)
+				table, err := sqlQuery(db, "SELECT * FROM "+tableName)
 				if err != nil {
 					log.Fatal(err)
 				}
-				defer rows.Close()
-				columns, err := rows.Columns()
-				if err != nil {
-					log.Fatal(err)
-				}
-				table := Table{
-					Name:    tableName,
-					Columns: columns,
-					Data:    make([][]string, 0),
-				}
-				for rows.Next() {
-					fields := make([]string, len(columns))
-					pointers := make([]interface{}, len(columns))
-					for i := range fields {
-						pointers[i] = &fields[i]
-					}
-					err := rows.Scan(pointers...)
-					if err != nil {
-						log.Fatal(err)
-					}
-					table.Data = append(table.Data, fields)
-				}
-				err = rows.Err()
-				if err != nil {
-					log.Fatal(err)
-				}
-				res = append(res, table)
+				table.Name = tableName
+				res = append(res, *table)
 			}
 
 			tcpMsg := TCPMessage{}
@@ -322,24 +296,78 @@ func (d *Daemon) handleMessage(message []byte) {
 	log.Debugf("handleMessage: %#v \n", tcpMsg)
 
 	switch tcpMsg.Cmd {
+
+	case "query":
+		query := tcpMsg.Data.(string)
+		db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v", d.Config.Database.User, d.Config.Database.Password, d.Config.Database.Address, d.Config.Database.Name))
+		var msg TCPMessage
+		if err != nil {
+			msg = TCPMessage{
+				Cmd:  "event",
+				Args: []string{"error"},
+				ID:   0,
+				Data: err.Error(),
+			}
+		} else {
+			defer db.Close()
+			res, err := sqlQuery(db, query)
+			if err != nil {
+				msg = TCPMessage{
+					Cmd:  "event",
+					Args: []string{"error"},
+					ID:   0,
+					Data: err.Error(),
+				}
+			} else {
+				msg = TCPMessage{
+					Cmd:  "event",
+					Args: []string{"result"},
+					ID:   0,
+					Data: res,
+				}
+			}
+		}
+		data, err := json.Marshal(&msg)
+		if err != nil {
+			log.Println("query error:", err)
+			return
+		}
+		separator := []byte(string('\n'))
+		d.tcpMessages <- append(data, separator...)
 	}
 }
 
-// Utility functions
-func splitRepoAndTag(repoTag string) (string, string) {
-
-	repo := ""
-	tag := ""
-
-	repoAndTag := strings.Split(repoTag, ":")
-
-	if len(repoAndTag) > 0 {
-		repo = repoAndTag[0]
+// help function
+func sqlQuery(db *sql.DB, query string) (*Table, error) {
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
 	}
-
-	if len(repoAndTag) > 1 {
-		tag = repoAndTag[1]
+	defer rows.Close()
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
 	}
-
-	return repo, tag
+	table := Table{
+		Name:    "result",
+		Columns: columns,
+		Data:    make([][]string, 0),
+	}
+	for rows.Next() {
+		fields := make([]string, len(columns))
+		pointers := make([]interface{}, len(columns))
+		for i := range fields {
+			pointers[i] = &fields[i]
+		}
+		err := rows.Scan(pointers...)
+		if err != nil {
+			return nil, err
+		}
+		table.Data = append(table.Data, fields)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+	return &table, nil
 }

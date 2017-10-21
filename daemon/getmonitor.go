@@ -1,5 +1,6 @@
 package daemon
 
+<<<<<<< HEAD
 import (
 	"encoding/json"
 	"fmt"
@@ -57,6 +58,14 @@ func getAllTidb(d *Daemon) (err error) {
 	d.SendData.Unlock()
 	return
 }
+=======
+func getAllTidb(d *Daemon) {
+	//data, err := d.Client.Query("count(tidb_domain_load_schema_total) by (exported_instance)")
+}
+
+func getAllTikv(d *Daemon) {
+	//data, err := d.Client.Query("count(tikv_engine_num_subcompaction_scheduled) by (exported_instance)")
+>>>>>>> cad1ad3b4a7894e78fcb9c19a3a212e8ee416765
 
 func getAllTikv(d *Daemon) (err error) {
 	rawdata, err := d.Client.Query("count(tikv_engine_num_subcompaction_scheduled) by (exported_instance)")
@@ -80,6 +89,7 @@ func getAllTikv(d *Daemon) (err error) {
 	return
 }
 
+<<<<<<< HEAD
 func getAllPd(d *Daemon) (err error) {
 	rawdata, err := d.Client.Query("pd_cluster_status{type=\"store_up_count\"}")
 	if err != nil {
@@ -92,4 +102,8 @@ func getAllPd(d *Daemon) (err error) {
 	fmt.Println(d.SendData.PdNum)
 	d.SendData.Unlock()
 	return
+=======
+func getAllPd(d *Daemon) {
+	//data, err := d.Client.Query("count(tikv_engine_num_subcompaction_scheduled) by (exported_instance)")
+>>>>>>> cad1ad3b4a7894e78fcb9c19a3a212e8ee416765
 }
