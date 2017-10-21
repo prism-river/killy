@@ -131,60 +131,61 @@ end
 -- updateContainer accepts 3 different states: running, stopped, created
 -- sometimes "start" events arrive before "create" ones
 -- in this case, we just ignore the update
-function updateContainer(id,name,imageRepo,imageTag,state)
-  LOG("Update container with ID: " .. id .. " state: " .. state)
+-- function updateContainer(id,name,imageRepo,imageTag,state)
+--   LOG("Update container with ID: " .. id .. " state: " .. state)
 
-  -- first pass, to see if the container is
-  -- already displayed (maybe with another state)
-  for i=1, table.getn(Containers)
-  do
-    -- if container found with same ID, we update it
-    if Containers[i] ~= EmptyContainerSpace and Containers[i].id == id
-    then
-      Containers[i]:setInfos(id,name,imageRepo,imageTag,state == CONTAINER_RUNNING)
-      Containers[i]:display(state == CONTAINER_RUNNING)
-      LOG("found. updated. now return")
-      return
-    end
-  end
+--   -- first pass, to see if the container is
+--   -- already displayed (maybe with another state)
+--   for i=1, table.getn(Containers)
+--   do
+--     -- if container found with same ID, we update it
+--     if Containers[i] ~= EmptyContainerSpace and Containers[i].id == id
+--     then
+--       Containers[i]:setInfos(id,name,imageRepo,imageTag,state == CONTAINER_RUNNING)
+--       Containers[i]:display(state == CONTAINER_RUNNING)
+--       LOG("found. updated. now return")
+--       return
+--     end
+--   end
 
-  -- if container isn't already displayed, we see if there's an empty space
-  -- in the world to display the container
-  local x = CONTAINER_START_X
-  local index = -1
+--   -- if container isn't already displayed, we see if there's an empty space
+--   -- in the world to display the container
+--   local x = CONTAINER_START_X
+--   local index = -1
 
-  for i=1, table.getn(Containers)
-  do
-    -- use first empty location
-    if Containers[i] == EmptyContainerSpace
-    then
-      LOG("Found empty location: Containers[" .. tostring(i) .. "]")
-      index = i
-      break
-    end
-    x = x + CONTAINER_OFFSET_X
-  end
+--   for i=1, table.getn(Containers)
+--   do
+--     -- use first empty location
+--     if Containers[i] == EmptyContainerSpace
+--     then
+--       LOG("Found empty location: Containers[" .. tostring(i) .. "]")
+--       index = i
+--       break
+--     end
+--     x = x + CONTAINER_OFFSET_X
+--   end
 
-  local container = NewContainer()
-  container:init(x,CONTAINER_START_Z)
-  container:setInfos(id,name,imageRepo,imageTag,state == CONTAINER_RUNNING)
-  container:addGround()
-  container:display(state == CONTAINER_RUNNING)
+--   local container = NewContainer()
+--   container:init(x,CONTAINER_START_Z)
+--   container:setInfos(id,name,imageRepo,imageTag,state == CONTAINER_RUNNING)
+--   container:addGround()
+--   container:display(state == CONTAINER_RUNNING)
 
-  if index == -1
-  then
-    table.insert(Containers, container)
-  else
-    Containers[index] = container
-  end
-end
+--   if index == -1
+--   then
+--     table.insert(Containers, container)
+--   else
+--     Containers[index] = container
+--   end
+-- end
 
 --
 function PlayerJoined(Player)
   -- enable flying
   Player:SetCanFly(true)
   LOG("player joined")
-  updateContainer(1,"?", "??")
+  updateTableRecordContainer(1,"?", "??")
+  updateTableRecordContainer(2,"!", "!!")
 end
 
 --

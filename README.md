@@ -23,3 +23,21 @@ go build
 cd ./Server
 ./Cuberite
 ```
+
+## API Specification
+
+### TCP Messages
+
+```go
+// TCPMessage defines what a message that can be
+// sent or received to/from LUA scripts
+type TCPMessage struct {
+	Cmd  string   `json:"cmd,omitempty"`
+	Args []string `json:"args,omitempty"`
+	// Id is used to associate requests & responses
+	ID   int         `json:"id,omitempty"`
+	Data interface{} `json:"data,omitempty"`
+}
+```
+
+Cmd 统一为 `event`，args 分为 `table` 和 `monitor`，分别对应表和监控，Data 各自定义。

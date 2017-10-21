@@ -5,12 +5,18 @@
 TABLE_AREA_START_X = -3
 TABLE_AREA_START_Z = 2
 -- offset to draw next container
-TABLE_SIGNAL_OFFSET = 1
+TABLE_SIGNAL_OFFSET = 2
+
+MONITOR_START_X = -3
+MONITOR_START_Z = 2
+MONITOR_OFFSET = 2
 
 -- the generated Minecraft world is just
 -- a white horizontal plane generated at
 -- this specific level
-GROUND_LEVEL = 70
+GROUND_DOCKER_LEVEL = 63
+GROUND_TABLE_LEVEL = 70
+GROUND_MONITOR_LEVEL = 80
 
 -- defines minimum surface to place one container
 GROUND_MIN_X = CONTAINER_START_X - 2

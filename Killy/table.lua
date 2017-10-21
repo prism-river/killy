@@ -1,14 +1,11 @@
 TableRecords = {}
--- as a lua array cannot contain nil values, we store references to this object
--- in the "Containers" array to indicate that there is no container at an index
 EmptyContainerSpace = {}
 
 -- updateContainer accepts 3 different states: running, stopped, created
 -- sometimes "start" events arrive before "create" ones
 -- in this case, we just ignore the update
-function updateContainer(id,name,content)
+function updateTableRecordContainer(id,name,content)
   LOG("Update tablet record container with ID: " .. id .. " content: " .. content)
-
   -- first pass, to see if the container is
   -- already displayed (maybe with another state)
   for i=1, table.getn(TableRecords)
@@ -40,6 +37,7 @@ function updateContainer(id,name,content)
     x = x + TABLE_SIGNAL_OFFSET
   end
 
+  LOG("create a new tablet record container")
   local container = NewTableRecordContainer()
   container:init(x,CONTAINER_START_Z)
   container:setInfos(id,name,content)

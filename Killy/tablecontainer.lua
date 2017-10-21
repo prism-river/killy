@@ -52,7 +52,7 @@ end
 -- -- container, it won't be visible on the map anymore
 function Container:destroy(running)
   local X = self.x+2
-  local Y = GROUND_LEVEL+2
+  local Y = GROUND_TABLE_LEVEL+2
   local Z = self.z+2
   LOG("Exploding at X:" .. X .. " Y:" .. Y .. " Z:" .. Z)
   local World = cRoot:Get():GetDefaultWorld()
@@ -63,18 +63,18 @@ function Container:destroy(running)
   -- and the player can collect it. Remove these first
 
   -- lever
-  digBlock(UpdateQueue,self.x+1,GROUND_LEVEL+3,self.z+1)
+  digBlock(UpdateQueue,self.x+1,GROUND_TABLE_LEVEL+3,self.z+1)
   -- signs
-  digBlock(UpdateQueue,self.x+3,GROUND_LEVEL+2,self.z-1)
-  digBlock(UpdateQueue,self.x,GROUND_LEVEL+2,self.z-1)
-  digBlock(UpdateQueue,self.x+1,GROUND_LEVEL+2,self.z-1)
+  digBlock(UpdateQueue,self.x+3,GROUND_TABLE_LEVEL+2,self.z-1)
+  digBlock(UpdateQueue,self.x,GROUND_TABLE_LEVEL+2,self.z-1)
+  digBlock(UpdateQueue,self.x+1,GROUND_TABLE_LEVEL+2,self.z-1)
   -- torch
-  digBlock(UpdateQueue,self.x+1,GROUND_LEVEL+3,self.z+1)
+  digBlock(UpdateQueue,self.x+1,GROUND_TABLE_LEVEL+3,self.z+1)
   --button
-  digBlock(UpdateQueue,self.x+2,GROUND_LEVEL+3,self.z+2)
+  digBlock(UpdateQueue,self.x+2,GROUND_TABLE_LEVEL+3,self.z+2)
 
   -- rest of the blocks
-  for py = GROUND_LEVEL+1, GROUND_LEVEL+4
+  for py = GROUND_TABLE_LEVEL+1, GROUND_TABLE_LEVEL+4
   do
     for px=self.x-1, self.x+4
     do
@@ -94,22 +94,18 @@ function Container:display()
   local metaPrimaryColor = E_META_WOOL_LIGHTBLUE
   local metaSecondaryColor = E_META_WOOL_BLUE
 
-  if running == false
-  then
-    metaPrimaryColor = E_META_WOOL_ORANGE
-    metaSecondaryColor = E_META_WOOL_RED
-  end
-
   self.displayed = true
-  setBlock(UpdateQueue,self.x,GROUND_LEVEL + 1,self.z,E_BLOCK_WOOL,metaPrimaryColor)
-  setBlock(UpdateQueue,self.x,GROUND_LEVEL + 1,self.z,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_XM)
-  updateSign(UpdateQueue,self.x,GROUND_LEVEL + 1,self.z,"","REMOVE","---->","",2)
+  -- add a block and add a sign to the blocks
+  setBlock(UpdateQueue,self.x+1,GROUND_TABLE_LEVEL + 1,self.z + 1,E_BLOCK_WOOL,metaPrimaryColor) 
+  -- setBlock(UpdateQueue,self.x,GROUND_TABLE_LEVEL + 1,self.z + 2,E_BLOCK_WOOL,metaPrimaryColor)
+  setBlock(UpdateQueue,self.x,GROUND_TABLE_LEVEL + 1,self.z + 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_XM)
+  updateSign(UpdateQueue,self.x,GROUND_TABLE_LEVEL + 1,self.z + 1,"","REMOVE","---->","",0)
 end
 
 -- Container:addGround creates ground blocks
 -- necessary to display the container
 function Container:addGround()
-  local y = GROUND_LEVEL
+  local y = GROUND_TABLE_LEVEL
   local max_x = GROUND_MAX_X
 
   if GROUND_MIN_X > self.x - 2
