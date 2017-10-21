@@ -6,8 +6,7 @@ function KillyCommand(Split, Player)
     if Split[1] == "/killy"
     then
       table.remove(Split,1)
-      LOG(Split)
-      SendTCPMessage("query","no-args",Split,0)
+      SendTCPMessage("query","no-args",table.concat(Split, " "),0)
     end
   end
 

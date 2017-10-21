@@ -137,25 +137,25 @@ function ActiveInstanceContainer:display(running)
   setBlock(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
   updateSign(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,self.name,self.realname,"duitang.cn", "",2)
 
-  -- Mem sign
+  -- Capacity sign
   setBlock(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
-  self:updateMemSign("N/A")
+  -- self:updateCapacitySign("N/A")
 
-  -- CPU sign
+  -- Available sign
   setBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
-  self:updateCPUSign("N/A")
+  -- self:updateAvailabilitySign("N/A")
 end
 
 -- ActiveInstanceContainer:updateMemSign updates the mem usage
 -- value displayed on ActiveInstanceContainer's sign
-function ActiveInstanceContainer:updateMemSign(s)
-  updateSign(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Mem usage","",s,"")
+function ActiveInstanceContainer:updateCapacitySign(s)
+  updateSign(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Capacity","",s,"")
 end
 
 -- ActiveInstanceContainer:updateCPUSign updates the mem usage
 -- value displayed on ActiveInstanceContainer's sign
-function ActiveInstanceContainer:updateCPUSign(s)
-  updateSign(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"CPU usage","",s,"")
+function ActiveInstanceContainer:updateAvailabilitySign(s)
+  updateSign(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Availability","",s,"")
 end
 
 -- ActiveInstanceContainer:addGround creates ground blocks
@@ -176,7 +176,7 @@ function ActiveInstanceContainer:addGround()
   do
     for z=GROUND_MIN_Z,GROUND_MAX_Z
     do
-      setBlock(UpdateQueue,x,y,z,E_BLOCK_WOOL,E_META_WOOL_WHITE)
+      setBlock(UpdateQueue,x,y,z,E_BLOCK_GRASS,0)
       for sky=y+1,y+6
       do
         setBlock(UpdateQueue,x,sky,z,E_BLOCK_AIR,0)

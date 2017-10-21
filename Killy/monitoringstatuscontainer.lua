@@ -84,7 +84,7 @@ function MonitoringStatusContainer:addGround()
   local min_x = GROUND_TABLE_MIN_X
   for x= min_x, max_x
   do
-    for z=GROUND_MIN_Z,GROUND_TABLE_MAX_Z
+    for z=GROUND_TABLE_MIN_Z,GROUND_TABLE_MAX_Z
     do
       setBlock(UpdateQueue,x,y,z,E_BLOCK_WOOL,E_META_WOOL_WHITE)
       for sky=y+1,y+6
