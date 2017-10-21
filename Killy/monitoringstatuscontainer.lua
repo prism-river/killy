@@ -86,7 +86,7 @@ function MonitoringStatusContainer:addGround()
   do
     for z=GROUND_TABLE_MIN_Z,GROUND_TABLE_MAX_Z
     do
-      setBlock(UpdateQueue,x,y,z,E_BLOCK_WOOL,E_META_WOOL_WHITE)
+      setBlock(UpdateQueue,x,y,z,E_BLOCK_GRASS,0)
       for sky=y+1,y+6
       do
         setBlock(UpdateQueue,x,sky,z,E_BLOCK_AIR,0)
