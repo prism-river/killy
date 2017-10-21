@@ -69,7 +69,7 @@ func (v *KILLYD) Main() {
 	v.waitGroup.Wrap(func() { v.ToMinecraft() })
 	router := gin.Default()
 	debugcharts.GinDebugRouter(router)
-	router.Run(":8080")
+	router.Run(":8434")
 }
 
 func (v *KILLYD) Exit() {
@@ -152,5 +152,5 @@ func (v *KILLYD) ToMinecraft() {
 		}
 	}
 exit:
-	v.logf(LOG_DEBUG, "KILLYD: ToInfluxdb exit")
+	v.logf(LOG_DEBUG, "KILLYD: ToMinecraftexit")
 }
