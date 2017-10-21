@@ -15,21 +15,25 @@ import (
 // application over the same TCP connection.
 
 var debugFlag = flag.Bool("debug", false, "enable debug logging")
+var AddressFlag = flag.String("Address", "127.0.0.1:9090", "prometheus address")
 
 func main() {
 	flag.Parse()
-
 	if *debugFlag {
 		log.SetLevel(log.DebugLevel)
 	}
 
+<<<<<<< HEAD
+	daemon := daemon.NewDaemon(*AddressFlag)
+=======
 	daemon := daemon.NewDaemon("10.1.4.12:9090")
+>>>>>>> cad1ad3b4a7894e78fcb9c19a3a212e8ee416765
 	if err := daemon.Init(); err != nil {
 		log.Fatal(err.Error())
 		os.Exit(1)
 	}
 
 	go daemon.StartMonitoringEvents()
-
+	go daemon.StartCollect()
 	daemon.Serve()
 }

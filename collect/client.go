@@ -18,7 +18,7 @@ func NewCollect(address string) *Collect {
 	}
 }
 
-func (c Collect) Query(command string) (result string, err error) {
+func (c Collect) Query(command string) (result []byte, err error) {
 	l := url.PathEscape(command)
 	resp, err := http.Get(c.baseQueryUrl + l)
 	if err != nil {
@@ -35,10 +35,9 @@ func (c Collect) Query(command string) (result string, err error) {
 		err = errors.New("Queries time out or abort")
 		return
 	}
-	rawresult, err := ioutil.ReadAll(resp.Body)
+	result, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
-	result = string(rawresult)
 	return
 }

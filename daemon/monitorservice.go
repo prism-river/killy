@@ -3,6 +3,8 @@ package daemon
 import (
 	"time"
 
+	"github.com/ngaut/log"
+
 	goutil "github.com/hawkingrei/golang_util"
 )
 
@@ -21,11 +23,10 @@ func NewCollectd(daemon *Daemon) *Collectd {
 	}
 }
 
-func (c *Collectd) Start() error {
+func (c *Collectd) Start() {
 	c.wg.Wrap(func() { c.GetAllTidb() })
 	c.wg.Wrap(func() { c.GetAllTikv() })
 	c.wg.Wrap(func() { c.GetAllPd() })
-	return nil
 }
 
 func (c *Collectd) Stop() {
@@ -37,7 +38,10 @@ func (c *Collectd) GetAllTidb() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllTidb(c.daemon)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
@@ -52,7 +56,10 @@ func (c *Collectd) GetAllTikv() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllTikv(c.daemon)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
@@ -67,7 +74,10 @@ func (c *Collectd) GetAllPd() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllPd(c.daemon)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
