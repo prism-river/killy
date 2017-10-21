@@ -8,8 +8,11 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/dustin/go-humanize"
 
 	_ "github.com/go-sql-driver/mysql" // driver for database/sql
 	"github.com/prism-river/killy/collectors"
@@ -310,8 +313,8 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 			d.SendData.TidbAvailHosts = add(d.SendData.TidbAvailHosts, data.Name)
 			d.SendData.TidbUnavailHosts = remove(d.SendData.TidbUnavailHosts, data.Name)
 		}
-		d.SendData.TidbNum = string(len(d.SendData.TidbAvailHosts))
-		d.SendData.TidbConnections = string(data.Data["connections"].(int))
+		d.SendData.TidbNum = strconv.Itoa(len(d.SendData.TidbAvailHosts))
+		d.SendData.TidbConnections = strconv.Itoa(data.Data["connections"].(int))
 	case "pdtikv":
 		if data.Fail {
 			d.SendData.PdAvailHosts = remove(d.SendData.PdAvailHosts, data.Name)
@@ -322,9 +325,9 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 		}
 		d.SendData.TikvAvailHosts = data.Data["availAddress"].([]string)
 		d.SendData.TikvUnavailHosts = data.Data["unavailAddress"].([]string)
-		d.SendData.TikvNum = string(len(d.SendData.TikvAvailHosts))
-		d.SendData.Totalavail = string(data.Data["totalAvail"].(int))
-		d.SendData.Totalcap = string(data.Data["totalcap"].(int))
+		d.SendData.TikvNum = strconv.Itoa(len(d.SendData.TikvAvailHosts))
+		d.SendData.Totalavail = humanize.Bytes(data.Data["totalAvail"].(uint64))
+		d.SendData.Totalcap = humanize.Bytes(data.Data["totalcap"].(uint64))
 		d.SendData.EveryTikvStatus = data.Data["EveryTikvStatus"]
 	case "pd":
 		if data.Fail {
@@ -334,6 +337,7 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 			d.SendData.PdAvailHosts = add(d.SendData.PdAvailHosts, data.Name)
 			d.SendData.PdUnavailHosts = remove(d.SendData.PdUnavailHosts, data.Name)
 		}
+		d.SendData.PdNum = strconv.Itoa(len(d.SendData.PdAvailHosts))
 	}
 	tcpMsg := TCPMessage{}
 	tcpMsg.Cmd = "monitor"

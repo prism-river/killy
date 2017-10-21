@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
 type PdTikvConnection struct {
@@ -80,8 +81,8 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 	var availAddress []string
 	var unavailAddress []string
 	var EveryTikvStatus []TikvStore
-	totalAvail := 0
-	totalcap := 0
+	var totalAvail uint64
+	var totalcap uint64
 	for _, d := range da.Stores {
 		var kv TikvStore
 		name := d.Store.Address
@@ -96,9 +97,9 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 		kv.Capacity = cap
 		avail := d.Status.Available
 		kv.Available = avail
-		numavail, _ := strconv.Atoi(avail)
+		numavail, _ := humanize.ParseBytes(avail)
 		totalAvail = totalAvail + numavail
-		numcap, _ := strconv.Atoi(cap)
+		numcap, _ := humanize.ParseBytes(cap)
 		totalcap = totalcap + numcap
 		EveryTikvStatus = append(EveryTikvStatus, kv)
 	}
