@@ -1,0 +1,21 @@
+# This is a TOML document. Boom.
+
+
+
+  # You can indent as you please. Tabs or spaces. TOML don't care.
+[topics]
+	[topics.tidb.tidb1]
+	address  = "10.1.4.12:10080"
+	interval = 1
+  
+	[topics.pd.pd1]
+	address = "10.1.4.200:23790"
+	interval = 1
+
+	[topics.pd.pd2]
+	address = "10.1.4.203:23790"
+	interval = 1
+
+	[topics.pd.pd3]
+	address = "10.1.4.204:23790"
+	interval = 1
