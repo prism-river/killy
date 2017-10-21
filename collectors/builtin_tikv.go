@@ -86,8 +86,8 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 		var kv TikvStore
 		name := d.Store.Address
 		kv.Address = d.Store.Address
-		state := d.Store.State
-		if state == 0 {
+		state := d.Store.StateName
+		if state == "Up" {
 			availAddress = append(availAddress, name)
 		} else {
 			unavailAddress = append(unavailAddress, name)
