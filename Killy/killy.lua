@@ -55,20 +55,6 @@ function Initialize(Plugin)
   return true
 end
 
--- updateStats update CPU and memory usage displayed
--- on container sign (container identified by id)
--- function updateStats(id, mem, cpu)
---   for i=1, table.getn(Containers)
---   do
---     if Containers[i] ~= EmptyContainerSpace and Containers[i].id == id
---     then
---       Containers[i]:updateMemSign(mem)
---       Containers[i]:updateCPUSign(cpu)
---       break
---     end
---   end
--- end
-
 -- getStartStopLeverContainer returns the container
 -- id that corresponds to lever at x,y coordinates
 function getStartStopLeverContainer(x, z)

@@ -52,3 +52,17 @@ function updateActiveInstanceContainer(id,name,realname,state)
     ActiveInstanceContainers[index] = container
   end
 end
+
+-- updateStats update CPU and memory usage displayed
+-- on container sign (container identified by id)
+function updateActiveInstanceStats(id, cap, a)
+  for i=1, table.getn(ActiveInstanceContainers)
+  do
+    if ActiveInstanceContainers[i] ~= EmptyContainerSpace and ActiveInstanceContainers[i].id == id
+    then
+      ActiveInstanceContainers[i]:updateCapacitySign(cap)
+      ActiveInstanceContainers[i]:updateAvailabilitySign(a)
+      break
+    end
+  end
+end

@@ -153,5 +153,9 @@ function handleMonitorEvent(event)
   do
     updateActiveInstanceContainer(event.PdUnavailHosts[i], "PD Instance", event.PdUnavailHosts[i], false)
   end
+  for i=1, table.getn(event.EveryTikvStatus)
+  do
+    updateActiveInstanceStats(event.EveryTikvStatus[i].address, event.EveryTikvStatus[i].capacity, event.EveryTikvStatus[i].available)
+  end
   LOG("handleMonitorEvent End")
 end

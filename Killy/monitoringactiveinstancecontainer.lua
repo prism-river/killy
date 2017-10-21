@@ -22,8 +22,8 @@ function NewActiveInstanceContainer()
     setInfos=ActiveInstanceContainer.setInfos,
     destroy=ActiveInstanceContainer.destroy,
     display=ActiveInstanceContainer.display,
-    updateMemSign=ActiveInstanceContainer.updateMemSign,
-    updateCPUSign=ActiveInstanceContainer.updateCPUSign,
+    updateCapacitySign=ActiveInstanceContainer.updateCapacitySign,
+    updateAvailabilitySign=ActiveInstanceContainer.updateAvailabilitySign,
     addGround=ActiveInstanceContainer.addGround
   }
   return c
@@ -139,23 +139,21 @@ function ActiveInstanceContainer:display(running)
 
   -- Capacity sign
   setBlock(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
-  -- self:updateCapacitySign("N/A")
 
   -- Available sign
   setBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
-  -- self:updateAvailabilitySign("N/A")
 end
 
 -- ActiveInstanceContainer:updateMemSign updates the mem usage
 -- value displayed on ActiveInstanceContainer's sign
 function ActiveInstanceContainer:updateCapacitySign(s)
-  updateSign(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Capacity","",s,"")
+  updateSign(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Capacity","",s,"",2)
 end
 
 -- ActiveInstanceContainer:updateCPUSign updates the mem usage
 -- value displayed on ActiveInstanceContainer's sign
 function ActiveInstanceContainer:updateAvailabilitySign(s)
-  updateSign(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Availability","",s,"")
+  updateSign(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,"Availability","",s,"",2)
 end
 
 -- ActiveInstanceContainer:addGround creates ground blocks
