@@ -1,5 +1,7 @@
 # TiDB craft
 
+[![Build Status](https://travis-ci.org/prism-river/killy.svg?branch=master)](https://travis-ci.org/prism-river/killy)
+
 ## 需求
 
 1. 监控数据的显示
