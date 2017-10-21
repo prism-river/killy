@@ -30,12 +30,14 @@ type TCPMessage struct {
 // be transported by a TCPMessage in the Data field.
 // It describes a Docker container event. (start, stop, destroy...)
 type TidbEvent struct {
-	Tidbhosts []string `json:"tidbhosts,omitempty"`
-	Tikvhosts []string
-	Pdhosts   []string
-	TidbNum   int
-	TikvNum   int
-	PdNum     string
+	Tidbhosts    []string `json:"tidbhosts,omitempty"`
+	Tikvhosts    []string
+	Pdhosts      []string
+	TidbNum      int
+	TikvNum      int
+	PdNum        string
+	PdDownNum    string
+	PdOfflineNum string
 	sync.RWMutex
 }
 
@@ -122,9 +124,11 @@ func (d *Daemon) Serve() {
 }
 
 func (d *Daemon) StartCollect() {
+	log.Info("Collecting Database Events")
 	collectd := NewCollectd(d)
 	collectd.Start()
 	go func() {
+		log.Info("Starting sending Database Events")
 		ticker := time.NewTicker(time.Duration(d.Config.Interval) * time.Second)
 		for {
 			select {

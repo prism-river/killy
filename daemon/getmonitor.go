@@ -93,3 +93,30 @@ func getAllPd(d *Daemon) (err error) {
 	d.SendData.Unlock()
 	return
 }
+func getPdDown(d *Daemon) (err error) {
+	rawdata, err := d.Client.Query("pd_cluster_status{type=\"store_down_count\"}")
+	if err != nil {
+		return
+	}
+	var data allPd
+	json.Unmarshal(rawdata, &data)
+	d.SendData.Lock()
+	d.SendData.PdDownNum = data.Data.Result[0].Value[1].(string)
+	fmt.Println(d.SendData.PdDownNum)
+	d.SendData.Unlock()
+	return
+}
+
+func getPdOffline(d *Daemon) (err error) {
+	rawdata, err := d.Client.Query("pd_cluster_status{type=\"store_offline_count\"}")
+	if err != nil {
+		return
+	}
+	var data allPd
+	json.Unmarshal(rawdata, &data)
+	d.SendData.Lock()
+	d.SendData.PdOfflineNum = data.Data.Result[0].Value[1].(string)
+	fmt.Println(d.SendData.PdOfflineNum)
+	d.SendData.Unlock()
+	return
+}
