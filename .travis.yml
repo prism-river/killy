@@ -7,5 +7,5 @@ go:
 
 go_import_path: github.com/prism-river/killy
 
-install:
+script:
   - go build

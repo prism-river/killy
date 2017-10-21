@@ -3,7 +3,7 @@ package daemon
 import (
 	"time"
 
-	"github.com/ngaut/log"
+	log "github.com/Sirupsen/logrus"
 
 	goutil "github.com/hawkingrei/golang_util"
 )
