@@ -5,6 +5,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/prism-river/killy/daemon"
 )
 
 // The main purpose of this application is to connect the docker daemon
@@ -22,7 +23,7 @@ func main() {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	daemon := NewDaemon()
+	daemon := daemon.NewDaemon("10.1.4.12:9090")
 	if err := daemon.Init(); err != nil {
 		log.Fatal(err.Error())
 		os.Exit(1)
