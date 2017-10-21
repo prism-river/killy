@@ -23,7 +23,7 @@ end
 
 -- Plugin initialization
 function Initialize(Plugin)
-  Plugin:SetName("Docker")
+  Plugin:SetName("Killy")
   Plugin:SetVersion(1)
 
   UpdateQueue = NewUpdateQueue()
@@ -40,7 +40,8 @@ function Initialize(Plugin)
 
   -- Command Bindings
 
-  cPluginManager.BindCommand("/docker", "*", DockerCommand, " - docker CLI commands")
+  -- TODO
+  cPluginManager.BindCommand("/killy", "*", DockerCommand, " - docker CLI commands")
 
   -- make all players admin
   cRankManager:SetDefaultRank("Admin")
@@ -54,17 +55,17 @@ end
 
 -- updateStats update CPU and memory usage displayed
 -- on container sign (container identified by id)
-function updateStats(id, mem, cpu)
-  for i=1, table.getn(Containers)
-  do
-    if Containers[i] ~= EmptyContainerSpace and Containers[i].id == id
-    then
-      Containers[i]:updateMemSign(mem)
-      Containers[i]:updateCPUSign(cpu)
-      break
-    end
-  end
-end
+-- function updateStats(id, mem, cpu)
+--   for i=1, table.getn(Containers)
+--   do
+--     if Containers[i] ~= EmptyContainerSpace and Containers[i].id == id
+--     then
+--       Containers[i]:updateMemSign(mem)
+--       Containers[i]:updateCPUSign(cpu)
+--       break
+--     end
+--   end
+-- end
 
 -- getStartStopLeverContainer returns the container
 -- id that corresponds to lever at x,y coordinates
@@ -183,6 +184,7 @@ function PlayerJoined(Player)
   -- enable flying
   Player:SetCanFly(true)
   LOG("player joined")
+  updateContainer(1,"?", "??")
 end
 
 --
