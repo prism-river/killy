@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -11,16 +10,11 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -32,13 +26,6 @@ type TCPMessage struct {
 	// Id is used to associate requests & responses
 	ID   int         `json:"id,omitempty"`
 	Data interface{} `json:"data,omitempty"`
-}
-
-// StatsOptionsEntry is used to collect stats from
-// the Docker daemon
-type StatsOptionsEntry struct {
-	statsChan chan *types.StatsJSON
-	doneChan  chan bool
 }
 
 // ContainerEvent is one kind of Data that can
@@ -76,8 +63,6 @@ type Config struct {
 type Daemon struct {
 	// The configuration
 	Config *Config
-	// Client is an instance of the DockerClient
-	Client *client.Client
 	// Version is the version of the Docker Daemon
 	Version string
 	// BinaryName is the name of the Docker Binary
@@ -89,10 +74,6 @@ type Daemon struct {
 	// tcpMessages can be used to send bytes to the Lua
 	// plugin from any go routine.
 	tcpMessages chan []byte
-
-	// statsOptionsStore references docker.StatsOptions
-	// of monitored containers.
-	statsOptionsStore map[string]StatsOptionsEntry
 
 	sync.Mutex
 }
@@ -124,18 +105,6 @@ func (d *Daemon) Init() error {
 	jsonParser := json.NewDecoder(configFile)
 	jsonParser.Decode(d.Config)
 
-	d.Client, err = client.NewEnvClient()
-	if err != nil {
-		return err
-	}
-
-	// get the version of the remote docker
-	info, err := d.Client.Info(context.Background())
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	d.Version = info.ServerVersion
-	d.statsOptionsStore = make(map[string]StatsOptionsEntry)
 	d.tcpMessages = make(chan []byte)
 
 	return nil
@@ -166,12 +135,7 @@ func (d *Daemon) Serve() {
 // Docker daemon and uses callback to transmit them
 // to LUA scripts.
 func (d *Daemon) StartMonitoringEvents() {
-	log.Info("Monitoring Docker Events")
-	filters := filters.NewArgs()
-	filters.Add("type", events.ContainerEventType)
-	opts := types.EventsOptions{
-		Filters: filters,
-	}
+	log.Info("Monitoring Database Events")
 
 	// mysql test
 	go func() {
@@ -244,7 +208,7 @@ func (d *Daemon) StartMonitoringEvents() {
 				log.Println("statCallback error:", err)
 				return
 			}
-			log.Info(data)
+			log.Info(string(data))
 
 			separator := []byte(string('\n'))
 
@@ -253,19 +217,6 @@ func (d *Daemon) StartMonitoringEvents() {
 			time.Sleep(time.Duration(d.Config.Interval) * time.Second)
 		}
 	}()
-
-	//context.TODO, cancel := context.WithCancel(d.context.TODO)
-	//defer cancel()
-	events, errs := d.Client.Events(context.Background(), opts)
-	for {
-		select {
-		case event := <-events:
-			log.Info("New Event Received")
-			d.eventCallback(event)
-		case err := <-errs:
-			log.Fatal(err.Error())
-		}
-	}
 }
 
 // handleConn handles a TCP connection
@@ -346,142 +297,7 @@ func (d *Daemon) handleMessage(message []byte) {
 	log.Debugf("handleMessage: %#v \n", tcpMsg)
 
 	switch tcpMsg.Cmd {
-	case "docker":
-		d.execDockerCmd(tcpMsg.Args)
-	case "info":
-		if len(tcpMsg.Args) > 0 {
-			switch tcpMsg.Args[0] {
-			case "containers":
-				d.listContainers()
-			}
-		}
 	}
-}
-
-// eventCallback receives and handles the docker events
-func (d *Daemon) eventCallback(event events.Message) {
-
-	containerEvent, err := d.apiEventToContainerEvent(event)
-	if err != nil {
-		log.Println("apiEventToContainerEvent error:", err)
-		return
-	}
-
-	switch event.Status {
-
-	case "create":
-		log.Infof("Container Create Event received for %s", containerEvent.ID)
-		containerEvent.Action = "createContainer"
-
-		data, err := containerEventToTCPMsg(containerEvent)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		d.tcpMessages <- append(data, '\n')
-		log.Info("DONE")
-	case "start":
-		log.Infof("Container Start Event received for %s", containerEvent.ID)
-		containerEvent.Action = "startContainer"
-
-		data, err := containerEventToTCPMsg(containerEvent)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		d.tcpMessages <- append(data, '\n')
-
-		d.startStatsMonitoring(containerEvent.ID)
-		log.Info("DONE")
-
-	case "die":
-		log.Infof("Container Die Event received for %s", containerEvent.ID)
-		containerEvent.Action = "stopContainer"
-
-		data, err := containerEventToTCPMsg(containerEvent)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		d.tcpMessages <- append(data, '\n')
-
-		d.Lock()
-		log.Info("Removing Container")
-		statsOptionsEntry, found := d.statsOptionsStore[containerEvent.ID]
-		if found {
-			log.Info("Sending Done on channel")
-			close(statsOptionsEntry.doneChan)
-			log.Info("Deleting the entry from the list")
-			delete(d.statsOptionsStore, containerEvent.ID)
-		}
-		d.Unlock()
-
-		// enforce 0% display (Cpu & Ram)
-		d.statCallback(containerEvent.ID, nil)
-		log.Info("DONE")
-
-	case "destroy":
-		log.Infof("Container Destroy Event received for %s", containerEvent.ID)
-		containerEvent.Action = "destroyContainer"
-
-		data, err := containerEventToTCPMsg(containerEvent)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		d.tcpMessages <- append(data, '\n')
-		log.Info("DONE")
-
-	default:
-		// Ignoring
-		log.Debug("Ignoring event: %s", event.Status)
-	}
-}
-
-// statCallback receives the stats (cpu & ram) from containers and send them to
-// the cuberite server
-func (d *Daemon) statCallback(id string, stats *types.StatsJSON, args ...interface{}) {
-	containerEvent := ContainerEvent{}
-	containerEvent.ID = id
-	containerEvent.Action = "stats"
-
-	if stats != nil {
-		memPercent := float64(stats.MemoryStats.Usage) / float64(stats.MemoryStats.Limit) * 100.0
-		var cpuPercent float64
-		if preCPUStats, exists := d.previousCPUStats[id]; exists {
-			cpuPercent = calculateCPUPercent(preCPUStats, &stats.CPUStats)
-		}
-
-		d.previousCPUStats[id] = &CPUStats{TotalUsage: stats.CPUStats.CPUUsage.TotalUsage, SystemUsage: stats.CPUStats.SystemUsage}
-
-		containerEvent.CPU = strconv.FormatFloat(cpuPercent, 'f', 2, 64) + "%"
-		containerEvent.RAM = strconv.FormatFloat(memPercent, 'f', 2, 64) + "%"
-	} else {
-		// if stats == nil set Cpu and Ram to 0%
-		// it's a way to enforce these values
-		// when stopping a container
-		containerEvent.CPU = "0.00%"
-		containerEvent.RAM = "0.00%"
-	}
-
-	tcpMsg := TCPMessage{}
-	tcpMsg.Cmd = "event"
-	tcpMsg.Args = []string{"containers"}
-	tcpMsg.ID = 0
-	tcpMsg.Data = &containerEvent
-
-	data, err := json.Marshal(&tcpMsg)
-	if err != nil {
-		log.Println("statCallback error:", err)
-		return
-	}
-
-	separator := []byte(string('\n'))
-
-	d.tcpMessages <- append(data, separator...)
 }
 
 // execDockerCmd handles Docker commands
@@ -496,135 +312,7 @@ func (d *Daemon) execDockerCmd(args []string) {
 	}
 }
 
-// listContainers handles and reply to http requests having the path "/containers"
-func (d *Daemon) listContainers() {
-	go func() {
-		containers, err := d.Client.ContainerList(context.Background(), types.ContainerListOptions{All: true})
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
-
-		for _, container := range containers {
-
-			id := container.ID
-
-			// get container name:
-			// use first name in array
-			// and remove leading '/'
-			// if necessary
-			name := ""
-			if len(container.Names) > 0 {
-				name = container.Names[0]
-				if len(name) > 0 && name[0] == '/' {
-					name = name[1:]
-				}
-			}
-
-			imageRepo, imageTag := splitRepoAndTag(container.Image)
-			if imageTag == "" {
-				imageTag = "latest"
-			}
-
-			containerEvent := ContainerEvent{}
-			containerEvent.ID = id
-			containerEvent.Action = "containerInfos"
-			containerEvent.ImageRepo = imageRepo
-			containerEvent.ImageTag = imageTag
-			containerEvent.Name = name
-			containerEvent.Running = container.State == "running"
-
-			data, err := containerEventToTCPMsg(containerEvent)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-
-			d.tcpMessages <- append(data, '\n')
-
-			if containerEvent.Running {
-				// Monitor stats
-				d.startStatsMonitoring(containerEvent.ID)
-			} else {
-				// enforce 0% display (Cpu & Ram)
-				d.statCallback(containerEvent.ID, nil)
-			}
-		}
-	}()
-}
-
-func (d *Daemon) startStatsMonitoring(containerID string) {
-	d.Lock()
-	statsOptionsEntry, found := d.statsOptionsStore[containerID]
-	if !found {
-		statsOptionsEntry = StatsOptionsEntry{
-			make(chan *types.StatsJSON),
-			make(chan bool, 1),
-		}
-		d.statsOptionsStore[containerID] = statsOptionsEntry
-	}
-	d.Unlock()
-
-	go func() {
-		log.Infof("Start monitoring stats: %s", containerID)
-		resp, err := d.Client.ContainerStats(context.Background(), containerID, true)
-		if err != nil {
-			log.Printf("dClient.Stats err: %#v", err)
-		}
-		defer resp.Body.Close()
-		dec := json.NewDecoder(resp.Body)
-		for {
-			select {
-			case <-statsOptionsEntry.doneChan:
-				log.Infof("Stopping collecting stats for %s", containerID)
-				return
-			default:
-				v := types.StatsJSON{}
-				if err := dec.Decode(&v); err != nil {
-					dec = json.NewDecoder(io.MultiReader(dec.Buffered(), resp.Body))
-					if err != io.EOF {
-						break
-					}
-					time.Sleep(100 * time.Millisecond)
-					continue
-				}
-				statsOptionsEntry.statsChan <- &v
-			}
-		}
-	}()
-
-	go func() {
-		for {
-			select {
-			case stats := <-statsOptionsEntry.statsChan:
-				if stats != nil {
-					d.statCallback(containerID, stats)
-				}
-			case <-statsOptionsEntry.doneChan:
-				log.Println("Go routine END")
-				return
-			}
-		}
-	}()
-}
-
 // Utility functions
-
-func calculateCPUPercent(previousCPUStats *CPUStats, newCPUStats *types.CPUStats) float64 {
-	var (
-		cpuPercent = 0.0
-		// calculate the change for the cpu usage of the container in between readings
-		cpuDelta = float64(newCPUStats.CPUUsage.TotalUsage - previousCPUStats.TotalUsage)
-		// calculate the change for the entire system between readings
-		systemDelta = float64(newCPUStats.SystemUsage - previousCPUStats.SystemUsage)
-	)
-
-	if systemDelta > 0.0 && cpuDelta > 0.0 {
-		cpuPercent = (cpuDelta / systemDelta) * float64(len(newCPUStats.CPUUsage.PercpuUsage)) * 100.0
-	}
-	return cpuPercent
-}
-
 func splitRepoAndTag(repoTag string) (string, string) {
 
 	repo := ""
@@ -654,27 +342,4 @@ func containerEventToTCPMsg(containerEvent ContainerEvent) ([]byte, error) {
 		return nil, errors.New("containerEventToTCPMsg error: " + err.Error())
 	}
 	return data, nil
-}
-
-func (d *Daemon) apiEventToContainerEvent(event events.Message) (ContainerEvent, error) {
-
-	containerEvent := ContainerEvent{}
-	containerEvent.ID = event.Actor.ID
-
-	// don't try to inspect container in that case, it's already gone!
-	if event.Action == "destroy" {
-		return containerEvent, nil
-	}
-
-	log.Debugf("apiEventToContainerEvent: %#v\n", event)
-	container, err := d.Client.ContainerInspect(context.Background(), containerEvent.ID)
-	if err != nil {
-		return containerEvent, err
-	}
-	containerEvent.ImageRepo, containerEvent.ImageTag = splitRepoAndTag(event.From)
-	if containerEvent.ImageTag == "" {
-		containerEvent.ImageTag = "latest"
-	}
-	containerEvent.Name = container.Name
-	return containerEvent, nil
 }
