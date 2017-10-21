@@ -12,7 +12,7 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql" // driver for database/sql
 	"github.com/prism-river/killy/collect"
 )
 
@@ -26,9 +26,8 @@ type TCPMessage struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
-// ContainerEvent is one kind of Data that can
+// TidbEvent is one kind of Data that can
 // be transported by a TCPMessage in the Data field.
-// It describes a Docker container event. (start, stop, destroy...)
 type TidbEvent struct {
 	Tidbhosts []string `json:"tidbhosts,omitempty"`
 	Tikvhosts []string
@@ -82,11 +81,9 @@ func NewDaemon(address string) *Daemon {
 
 // Init initializes a Daemon
 func (d *Daemon) Init() error {
-	var err error
 	// load configuration
 	d.Config = new(Config)
-	var configFile *os.File
-	configFile, err = os.Open("config.json")
+	configFile, err := os.Open("config.json")
 	defer configFile.Close()
 	if err != nil {
 		log.Fatal(err.Error())
@@ -157,9 +154,9 @@ func (d *Daemon) StartCollect() {
 // Docker daemon and uses callback to transmit them
 // to LUA scripts.
 func (d *Daemon) StartMonitoringEvents() {
-	log.Info("Monitoring Database Events")
+	log.Info("Monitoring TiDB")
 
-	// mysql test
+	// monitor table
 	go func() {
 		db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v", d.Config.Database.User, d.Config.Database.Password, d.Config.Database.Address, d.Config.Database.Name))
 		if err != nil {
@@ -205,7 +202,7 @@ func (d *Daemon) StartMonitoringEvents() {
 
 			data, err := json.Marshal(&tcpMsg)
 			if err != nil {
-				log.Println("statCallback error:", err)
+				log.Println("table monitor error:", err)
 				return
 			}
 
