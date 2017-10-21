@@ -1,6 +1,7 @@
 # TiDB craft
 
 [![Build Status](https://travis-ci.org/prism-river/killy.svg?branch=master)](https://travis-ci.org/prism-river/killy)
+[![Go Report Card](https://goreportcard.com/badge/github.com/prism-river/killy)](https://goreportcard.com/report/github.com/prism-river/killy)
 
 ## 需求
 
@@ -11,6 +12,7 @@
 ## Config
 
 Copy the config.example.json to config.json and edit it.
+
 ## Instructions
 
 ```bash
@@ -40,4 +42,10 @@ type TCPMessage struct {
 }
 ```
 
-Cmd 统一为 `event`，args 分为 `table` 和 `monitor`，分别对应表和监控，Data 各自定义。
+#### 监控
+
+cmd == 'monitor'
+
+#### 数据库
+
+cmd == 'event' and args == ['table']
