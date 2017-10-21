@@ -2,6 +2,9 @@
 
 [![Build Status](https://travis-ci.org/prism-river/killy.svg?branch=master)](https://travis-ci.org/prism-river/killy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/prism-river/killy)](https://goreportcard.com/report/github.com/prism-river/killy)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/prism-river/killy)
+[![](https://img.shields.io/badge/docker-supported-blue.svg)](https://godoc.org/github.com/prism-river/killy)
+[![Libraries.io for GitHub](https://img.shields.io/librariesio/github/prism-river/killy.svg)](https://libraries.io/github/prism-river/killy)
 
 ## 需求
 
