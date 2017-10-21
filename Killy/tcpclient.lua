@@ -83,10 +83,23 @@ end
 -- global tcp connection TCP_CONN
 function ParseTCPMessage(message)
   local m = json.parse(message)
-  if m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "containers"
+  -- deal with table events
+  if m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "table"
   then
-    handleContainerEvent(m.data)
+    handleTableEvent(m.data)
+  -- deal with monitor events
+  elseif  m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "monitor"
+  then
+    handleMonitorEvent(m.data)
   end
+end
+
+function handleTableEvent(event)
+  -- TODO
+end
+
+function handleMonitorEvent(event)
+  -- TODO
 end
 
 -- handleContainerEvent handles a container

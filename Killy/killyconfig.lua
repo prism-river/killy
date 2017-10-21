@@ -2,6 +2,12 @@
 -- for the Killy plugin.
 
 -- X,Z positions to draw first container
+ACTIVE_CONTAINER_START_X = -3
+ACTIVE_CONTAINER_START_Z = 2
+-- offset to draw next container
+ACTIVE_CONTAINER_OFFSET_X = -6
+
+-- X,Z positions to draw first container
 TABLE_AREA_START_X = -3
 TABLE_AREA_START_Z = 2
 -- offset to draw next container
@@ -16,7 +22,7 @@ MONITOR_OFFSET = 2
 -- this specific level
 GROUND_DOCKER_LEVEL = 63
 GROUND_TABLE_LEVEL = 70
-GROUND_MONITOR_LEVEL = 80
+GROUND_MONITOR_ACTIVE_LEVEL = 80
 
 -- defines minimum surface to place one container
 GROUND_MIN_X = CONTAINER_START_X - 2

@@ -186,6 +186,8 @@ function PlayerJoined(Player)
   LOG("player joined")
   updateTableRecordContainer(1,"?", "??")
   updateTableRecordContainer(2,"!", "!!")
+  updateActiveInstanceContainer(1,"??",true)
+  -- updateActiveInstanceContainer(2,"!!",true)
 end
 
 --

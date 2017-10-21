@@ -6,8 +6,8 @@ CONTAINER_CREATED = 0
 CONTAINER_RUNNING = 1
 CONTAINER_STOPPED = 2
 
--- NewContainer returns a Container object,
--- representation of a Docker container in
+-- NewTableRecordContainer returns a Container object,
+-- representation of a container in
 -- the Minecraft world
 function NewTableRecordContainer()
   c = {
@@ -16,16 +16,16 @@ function NewTableRecordContainer()
     z = 0,
     name="",
     id="",
-    init=Container.init,
-    setInfos=Container.setInfos,
-    destroy=Container.destroy,
-    display=Container.display,
-    addGround=Container.addGround
+    init=TableRecordContainer.init,
+    setInfos=TableRecordContainer.setInfos,
+    destroy=TableRecordContainer.destroy,
+    display=TableRecordContainer.display,
+    addGround=TableRecordContainer.addGround
   }
   return c
 end
 
-Container = {
+TableRecordContainer = {
     displayed = false, 
     x = 0,
     z = 0, 
@@ -33,24 +33,24 @@ Container = {
     id=""
 }
 
--- Container:init sets Container's position
-function Container:init(x,z)
+-- TableRecordContainer:init sets Container's position
+function TableRecordContainer:init(x,z)
   self.x = x
   self.z = z
   self.displayed = false
 end
 
--- Container:setInfos sets Container's id, name, imageRepo,
+-- TableRecordContainer:setInfos sets Container's id, name, imageRepo,
 -- image tag and running state
-function Container:setInfos(id,name,content)
+function TableRecordContainer:setInfos(id,name,content)
   self.id = id
   self.name = name
   self.content = content
 end
 
--- -- Container:destroy removes all blocks of the
--- -- container, it won't be visible on the map anymore
-function Container:destroy(running)
+-- -- TableRecordContainer:destroy removes all blocks of the
+-- -- TableRecordContainer, it won't be visible on the map anymore
+function TableRecordContainer:destroy(running)
   local X = self.x+2
   local Y = GROUND_TABLE_LEVEL+2
   local Z = self.z+2
@@ -86,10 +86,10 @@ function Container:destroy(running)
   end
 end
 
--- Container:display displays all Container's blocks
+-- TableRecordContainer:display displays all Container's blocks
 -- Blocks will be blue if the container is running,
 -- orange otherwise.
-function Container:display()
+function TableRecordContainer:display()
 
   local metaPrimaryColor = E_META_WOOL_LIGHTBLUE
   local metaSecondaryColor = E_META_WOOL_BLUE
@@ -102,9 +102,9 @@ function Container:display()
   updateSign(UpdateQueue,self.x,GROUND_TABLE_LEVEL + 1,self.z + 1,"","REMOVE","---->","",0)
 end
 
--- Container:addGround creates ground blocks
+-- TableRecordContainer:addGround creates ground blocks
 -- necessary to display the container
-function Container:addGround()
+function TableRecordContainer:addGround()
   local y = GROUND_TABLE_LEVEL
   local max_x = GROUND_MAX_X
 
