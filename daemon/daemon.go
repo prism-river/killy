@@ -273,7 +273,8 @@ func (d *Daemon) handleConn(conn net.Conn) {
 		log.Debug("tcpMessage:", string(tcpMessage))
 		_, err := conn.Write(tcpMessage)
 		if err != nil {
-			log.Fatal("conn write error:", err)
+			log.Error("conn write error:", err)
+			break
 		}
 	}
 }
