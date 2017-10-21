@@ -348,3 +348,62 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 	separator := []byte(string('\n'))
 	d.tcpMessages <- append(sendD, separator...)
 }
+
+func (d *Daemon) StartMonitoringEvents() {
+	d.ctx.killyd.logf(LOG_INFO, "Monitoring TiDB")
+	// monitor table
+	db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v", d.Config.Database.User, d.Config.Database.Password, d.Config.Database.Address, d.Config.Database.Name))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	for {
+		tables := make([]string, 0)
+		rows, err := db.Query("SHOW TABLES")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var name string
+			err := rows.Scan(&name)
+			if err != nil {
+				log.Fatal(err)
+			}
+			tables = append(tables, name)
+		}
+		err = rows.Err()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		res := make([]Table, 0)
+		for _, tableName := range tables {
+			table, err := sqlQuery(db, "SELECT * FROM "+tableName)
+			if err != nil {
+				log.Fatal(err)
+			}
+			table.Name = tableName
+			res = append(res, *table)
+		}
+
+		tcpMsg := TCPMessage{}
+		tcpMsg.Cmd = "event"
+		tcpMsg.Args = []string{"table"}
+		tcpMsg.ID = 0
+		tcpMsg.Data = &res
+
+		data, err := json.Marshal(&tcpMsg)
+		if err != nil {
+			log.Println("table monitor error:", err)
+			return
+		}
+
+		separator := []byte(string('\n'))
+
+		d.tcpMessages <- append(data, separator...)
+
+		time.Sleep(time.Duration(d.Config.Interval) * time.Second)
+	}
+}
