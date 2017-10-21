@@ -44,6 +44,7 @@ type ContainerEvent struct {
 
 // Table represents a table in TiDB
 type Table struct {
+	Name    string     `json:"name"`
 	Columns []string   `json:"columns"`
 	Data    [][]string `json:"data"`
 }
@@ -165,19 +166,22 @@ func (d *Daemon) StartMonitoringEvents() {
 				log.Fatal(err)
 			}
 
-			res := make(map[string]Table)
+			res := make([]Table, 0)
 			for _, tableName := range tables {
 				rows, err := db.Query("SELECT * FROM " + tableName)
 				if err != nil {
 					log.Fatal(err)
 				}
 				defer rows.Close()
-				var table Table
 				columns, err := rows.Columns()
 				if err != nil {
 					log.Fatal(err)
 				}
-				table.Columns = columns
+				table := Table{
+					Name:    tableName,
+					Columns: columns,
+					Data:    make([][]string, 0),
+				}
 				for rows.Next() {
 					fields := make([]string, len(columns))
 					pointers := make([]interface{}, len(columns))
@@ -194,7 +198,7 @@ func (d *Daemon) StartMonitoringEvents() {
 				if err != nil {
 					log.Fatal(err)
 				}
-				res[tableName] = table
+				res = append(res, table)
 			}
 
 			tcpMsg := TCPMessage{}
@@ -208,7 +212,6 @@ func (d *Daemon) StartMonitoringEvents() {
 				log.Println("statCallback error:", err)
 				return
 			}
-			log.Info(string(data))
 
 			separator := []byte(string('\n'))
 
