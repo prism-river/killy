@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -33,11 +31,12 @@ type TCPMessage struct {
 // be transported by a TCPMessage in the Data field.
 // It describes a Docker container event. (start, stop, destroy...)
 type TidbEvent struct {
-	Action string `json:"action,omitempty"`
-	ID     string `json:"id,omitempty"`
-	Name   string `json:"name,omitempty"`
-	CPU    string `json:"cpu,omitempty"`
-	RAM    string `json:"ram,omitempty"`
+	Tidbhosts []string `json:"tidbhosts,omitempty"`
+	Tikvhosts []string
+	Pdhosts   []string
+	TidbNum   int
+	TikvNum   int
+	PdNum     string
 	sync.RWMutex
 }
 
@@ -61,13 +60,15 @@ type Config struct {
 
 // Daemon maintains state when the dockercraft daemon is running
 type Daemon struct {
-	Client *collect.Collect
+	Client   *collect.Collect
+	SendData TidbEvent
 	// The configuration
 	Config *Config
 
 	// tcpMessages can be used to send bytes to the Lua
 	// plugin from any go routine.
 	tcpMessages chan []byte
+	ExitChan    chan int
 
 	sync.Mutex
 }
@@ -95,6 +96,7 @@ func (d *Daemon) Init() error {
 	jsonParser.Decode(d.Config)
 
 	d.tcpMessages = make(chan []byte)
+	d.ExitChan = make(chan int)
 
 	return nil
 }
@@ -118,6 +120,38 @@ func (d *Daemon) Serve() {
 		// goproxy is used as support for one single Lua plugin.
 		d.handleConn(conn)
 	}
+}
+
+func (d *Daemon) StartCollect() {
+	collectd := NewCollectd(d)
+	collectd.Start()
+	go func() {
+		ticker := time.NewTicker(time.Duration(d.Config.Interval) * time.Second)
+		for {
+			select {
+			case <-ticker.C:
+				tcpMsg := TCPMessage{}
+				tcpMsg.Cmd = "monitor"
+				tcpMsg.Args = []string{"all"}
+				tcpMsg.ID = 0
+				tcpMsg.Data = &d.SendData
+
+				data, err := json.Marshal(&tcpMsg)
+				if err != nil {
+					log.Println("statCallback error:", err)
+					continue
+				}
+
+				separator := []byte(string('\n'))
+
+				d.tcpMessages <- append(data, separator...)
+			case <-d.ExitChan:
+				goto exit
+			}
+		}
+	exit:
+		ticker.Stop()
+	}()
 }
 
 // StartMonitoringEvents listens for events from the
@@ -291,18 +325,6 @@ func (d *Daemon) handleMessage(message []byte) {
 	}
 }
 
-// execDockerCmd handles Docker commands
-func (d *Daemon) execDockerCmd(args []string) {
-	if len(args) > 0 {
-		log.Debugln("execDockerCmd:", d.BinaryName, args)
-		cmd := exec.Command(d.BinaryName, args...)
-		err := cmd.Run() // will wait for command to return
-		if err != nil {
-			log.Println("Error:", err.Error())
-		}
-	}
-}
-
 // Utility functions
 func splitRepoAndTag(repoTag string) (string, string) {
 
@@ -320,17 +342,4 @@ func splitRepoAndTag(repoTag string) (string, string) {
 	}
 
 	return repo, tag
-}
-
-func containerEventToTCPMsg(containerEvent ContainerEvent) ([]byte, error) {
-	tcpMsg := TCPMessage{}
-	tcpMsg.Cmd = "event"
-	tcpMsg.Args = []string{"containers"}
-	tcpMsg.ID = 0
-	tcpMsg.Data = &containerEvent
-	data, err := json.Marshal(&tcpMsg)
-	if err != nil {
-		return nil, errors.New("containerEventToTCPMsg error: " + err.Error())
-	}
-	return data, nil
 }

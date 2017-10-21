@@ -3,6 +3,8 @@ package daemon
 import (
 	"time"
 
+	"github.com/ngaut/log"
+
 	goutil "github.com/hawkingrei/golang_util"
 )
 
@@ -13,8 +15,8 @@ type Collectd struct {
 	interval int
 }
 
-func NewCollectd(daomen *Daomen) collectd {
-	return &Collectd{
+func NewCollectd(daomen *Daemon) Collectd {
+	return Collectd{
 		daomen:   daomen,
 		exitChan: make(chan int),
 		interval: 1,
@@ -22,7 +24,7 @@ func NewCollectd(daomen *Daomen) collectd {
 
 }
 
-func (c *Collectd) Start() error {
+func (c *Collectd) Start() {
 	c.wg.Wrap(func() { c.GetAllTidb() })
 	c.wg.Wrap(func() { c.GetAllTikv() })
 	c.wg.Wrap(func() { c.GetAllPd() })
@@ -37,7 +39,10 @@ func (c *Collectd) GetAllTidb() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllTidb(c.daomen)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
@@ -52,7 +57,10 @@ func (c *Collectd) GetAllTikv() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllTikv(c.daomen)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
@@ -67,7 +75,10 @@ func (c *Collectd) GetAllPd() {
 	for {
 		select {
 		case <-ticker.C:
-
+			err := getAllPd(c.daomen)
+			if err != nil {
+				log.Error(err)
+			}
 			continue
 		case <-c.exitChan:
 			goto exit
