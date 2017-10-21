@@ -299,11 +299,15 @@ func remove(elements []string, element string) (result []string) {
 }
 
 func removeMulti(a []string, b []string) (avail []string, unavail []string) {
-	var checkmap map[string]string
-	for _, result := range a {
+	if a == nil {
+		avail = b
+		return
+	}
+	checkmap := make(map[string]string)
+	for _, result := range b {
 		checkmap[string(result)] = ""
 	}
-	for _, result := range b {
+	for _, result := range a {
 		if _, ok := checkmap[string(result)]; ok {
 			avail = append(avail, string(result))
 		} else {
