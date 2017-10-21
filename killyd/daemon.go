@@ -298,25 +298,6 @@ func remove(elements []string, element string) (result []string) {
 	return result
 }
 
-func removeMulti(a []string, b []string) (avail []string, unavail []string) {
-	if a == nil {
-		avail = b
-		return
-	}
-	checkmap := make(map[string]string)
-	for _, result := range b {
-		checkmap[string(result)] = ""
-	}
-	for _, result := range a {
-		if _, ok := checkmap[string(result)]; ok {
-			avail = append(avail, string(result))
-		} else {
-			unavail = append(unavail, string(result))
-		}
-	}
-	return
-}
-
 func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 	d.SendData.Lock()
 	defer d.SendData.Unlock()
@@ -339,7 +320,8 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 			d.SendData.PdAvailHosts = add(d.SendData.PdAvailHosts, data.Name)
 			d.SendData.PdUnavailHosts = remove(d.SendData.PdUnavailHosts, data.Name)
 		}
-		d.SendData.TikvAvailHosts, d.SendData.TikvUnavailHosts = removeMulti(d.SendData.TikvAvailHosts, data.Data["availAddress"].([]string))
+		d.SendData.TikvAvailHosts = data.Data["availAddress"].([]string)
+		d.SendData.TikvUnavailHosts = data.Data["unavailAddress"].([]string)
 		d.SendData.TikvNum = string(len(d.SendData.TikvAvailHosts))
 		d.SendData.Totalavail = string(data.Data["totalAvail"].(int))
 		d.SendData.Totalcap = string(data.Data["totalcap"].(int))
