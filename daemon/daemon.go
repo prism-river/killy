@@ -1,4 +1,4 @@
-package main
+package daemon
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/prism-river/killy/collect"
 )
 
 // TCPMessage defines what a message that can be
@@ -31,15 +32,13 @@ type TCPMessage struct {
 // ContainerEvent is one kind of Data that can
 // be transported by a TCPMessage in the Data field.
 // It describes a Docker container event. (start, stop, destroy...)
-type ContainerEvent struct {
-	Action    string `json:"action,omitempty"`
-	ID        string `json:"id,omitempty"`
-	Name      string `json:"name,omitempty"`
-	ImageRepo string `json:"imageRepo,omitempty"`
-	ImageTag  string `json:"imageTag,omitempty"`
-	CPU       string `json:"cpu,omitempty"`
-	RAM       string `json:"ram,omitempty"`
-	Running   bool   `json:"running,omitempty"`
+type TidbEvent struct {
+	Action string `json:"action,omitempty"`
+	ID     string `json:"id,omitempty"`
+	Name   string `json:"name,omitempty"`
+	CPU    string `json:"cpu,omitempty"`
+	RAM    string `json:"ram,omitempty"`
+	sync.RWMutex
 }
 
 // Table represents a table in TiDB
@@ -62,15 +61,9 @@ type Config struct {
 
 // Daemon maintains state when the dockercraft daemon is running
 type Daemon struct {
+	Client *collect.Collect
 	// The configuration
 	Config *Config
-	// Version is the version of the Docker Daemon
-	Version string
-	// BinaryName is the name of the Docker Binary
-	BinaryName string
-	// previouscpustats is a map containing the previous cpu stats we got from the
-	// docker daemon through the docker remote api
-	previousCPUStats map[string]*CPUStats
 
 	// tcpMessages can be used to send bytes to the Lua
 	// plugin from any go routine.
@@ -80,16 +73,11 @@ type Daemon struct {
 }
 
 // NewDaemon returns a new instance of Daemon
-func NewDaemon() *Daemon {
+func NewDaemon(address string) *Daemon {
+	client := collect.NewCollect("http://" + address + "/api/v1/query?query=")
 	return &Daemon{
-		previousCPUStats: make(map[string]*CPUStats),
+		Client: client,
 	}
-}
-
-// CPUStats contains the Total and System CPU stats
-type CPUStats struct {
-	TotalUsage  uint64
-	SystemUsage uint64
 }
 
 // Init initializes a Daemon
