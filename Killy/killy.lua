@@ -147,34 +147,6 @@ function PlayerUsingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, Cu
   end
 end
 
-
-function KillyCommand(Split, Player)
-  if table.getn(Split) > 0
-  then
-    LOG("Split[1]: " .. Split[1])
-
-    if Split[1] == "/killy"
-    then
-      if table.getn(Split) > 1
-      then
-        if Split[2] == "pull" or Split[2] == "create" or Split[2] == "run" or Split[2] == "stop" or Split[2] == "rm" or Split[2] == "rmi" or Split[2] == "start" or Split[2] == "kill"
-        then
-          -- force detach when running a container
-          if Split[2] == "run"
-          then
-            table.insert(Split,3,"-d")
-          end
-          table.remove(Split,1)
-          SendTCPMessage("docker",Split,0)
-        end
-      end
-    end
-  end
-
-  return true
-end
-
-
 function OnPlayerFoodLevelChange(Player, NewFoodLevel)
   -- Don't allow the player to get hungry
   return true, Player, NewFoodLevel

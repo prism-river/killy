@@ -15,7 +15,7 @@ TCP_CLIENT = {
 
     -- list containers
     LOG("listing containers...")
-    SendTCPMessage("info",{"containers"},0)
+    -- SendTCPMessage("info",{"containers"},0)
   end,
 
   OnError = function (TCPConn, ErrorCode, ErrorMsg)
@@ -68,13 +68,13 @@ TCP_CLIENT = {
 -- SendTCPMessage sends a message over global
 -- tcp connection TCP_CONN. args and id are optional
 -- id stands for the request id.
-function SendTCPMessage(cmd, args, id)
+function SendTCPMessage(cmd, args, data,id)
   if TCP_CONN == nil
   then
     LOG("can't send TCP message, TCP_CLIENT not connected")
     return
   end
-  local v = {cmd=cmd, args=args, id=id}
+  local v = {cmd=cmd,args=args,data=data,id=id}
   local msg = json.stringify(v) .. "\n"
   TCP_CONN:Send(msg)
 end
