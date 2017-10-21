@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql" // driver for database/sql
 	"github.com/prism-river/killy/collectors"
 )
 
