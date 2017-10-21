@@ -11,3 +11,15 @@
 ## Config
 
 Copy the config.example.json to config.json and edit it.
+## Instructions
+
+```bash
+cp -r config/* Server/
+cp -r Killy Server/Plugins/
+mkdir bin
+ln -s /usr/bin/docker bin/docker-${DOCKER_VERSION}-ce
+go build
+./killy &
+cd ./Server
+./Cuberite
+```
