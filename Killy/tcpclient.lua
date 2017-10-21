@@ -82,13 +82,14 @@ end
 -- ParseTCPMessage parses a message received from
 -- global tcp connection TCP_CONN
 function ParseTCPMessage(message)
+  LOG("???")
   local m = json.parse(message)
   -- deal with table events
   if m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "table"
   then
     handleTableEvent(m.data)
   -- deal with monitor events
-  elseif  m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "monitor"
+  elseif  m.cmd == "monitor" and table.getn(m.args) > 0 and m.args[1] == "all"
   then
     handleMonitorEvent(m.data)
   end
@@ -97,57 +98,24 @@ end
 function handleTableEvent(event)
   -- TODO
   LOG("handleTableEvent")
-  updateTableRecordContainer(0, "No-name", event.person.columns)
-  for i=1, table.getn(event.person.data)
+  updateTableRecordContainer(0, "No-name", event[1].columns)
+  for i=1, table.getn(event[1].data)
   do
-    updateTableRecordContainer(i, "No-name", event.person.data[i])
+    updateTableRecordContainer(i, "No-name", event[1].data[i])
   end
   LOG("handleTableEvent End")
 end
 
 function handleMonitorEvent(event)
   -- TODO
-end
-
--- handleContainerEvent handles a container
--- event TCP message.
-function handleContainerEvent(event)
-
-  event.imageTag = event.imageTag or ""
-  event.imageRepo = event.imageRepo or ""
-  event.name = event.name or ""
-
-  if event.action == "containerInfos"
-  then
-    local state = CONTAINER_STOPPED
-    if event.running then
-      state = CONTAINER_RUNNING
-    end
-    updateContainer(event.id,event.name,event.imageRepo,event.imageTag,state)
+  LOG("handleMonitorEvent")
+  for i=1, table.getn(event.tidbhosts)
+  do
+    updateActiveInstanceContainer(i, "TiDB Instance", event.tidbhosts[i], true)
   end
-
-  if event.action == "startContainer"
-  then
-    updateContainer(event.id,event.name,event.imageRepo,event.imageTag,CONTAINER_RUNNING)
+  for i=1, table.getn(event.Tikvhosts)
+  do
+    updateActiveInstanceContainer(event.Tikvhosts[i], "TiKV Instance", event.Tikvhosts[i], true)
   end
-
-  if event.action == "createContainer"
-  then
-    updateContainer(event.id,event.name,event.imageRepo,event.imageTag,CONTAINER_CREATED)
-  end
-
-  if event.action == "stopContainer"
-  then
-    updateContainer(event.id,event.name,event.imageRepo,event.imageTag,CONTAINER_STOPPED)
-  end
-
-  if event.action == "destroyContainer"
-  then
-    destroyContainer(event.id)
-  end
-
-  if event.action == "stats"
-  then
-    updateStats(event.id,event.ram,event.cpu)
-  end
+  LOG("handleMonitorEvent End")
 end
