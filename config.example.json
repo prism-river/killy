@@ -1,9 +1,0 @@
-{
-    "database": {
-        "user": "root",
-        "password": "",
-        "address": "127.0.0.1:3306",
-        "name": "test"
-    },
-    "interval": 10
-}
