@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -18,6 +21,7 @@ import (
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // TCPMessage defines what a message that can be
@@ -51,8 +55,27 @@ type ContainerEvent struct {
 	Running   bool   `json:"running,omitempty"`
 }
 
+// Table represents a table in TiDB
+type Table struct {
+	Columns []string   `json:"columns"`
+	Data    [][]string `json:"data"`
+}
+
+// Config for the daemon
+type Config struct {
+	Database struct {
+		User     string `json:"user"`
+		Password string `json:"password"`
+		Address  string `json:"address"`
+		Name     string `json:"name"`
+	} `json:"database"`
+	Interval int `json:"interval"` // in seconds
+}
+
 // Daemon maintains state when the dockercraft daemon is running
 type Daemon struct {
+	// The configuration
+	Config *Config
 	// Client is an instance of the DockerClient
 	Client *client.Client
 	// Version is the version of the Docker Daemon
@@ -90,6 +113,17 @@ type CPUStats struct {
 // Init initializes a Daemon
 func (d *Daemon) Init() error {
 	var err error
+	// load configuration
+	d.Config = new(Config)
+	var configFile *os.File
+	configFile, err = os.Open("config.json")
+	defer configFile.Close()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	jsonParser := json.NewDecoder(configFile)
+	jsonParser.Decode(d.Config)
+
 	d.Client, err = client.NewEnvClient()
 	if err != nil {
 		return err
@@ -138,6 +172,87 @@ func (d *Daemon) StartMonitoringEvents() {
 	opts := types.EventsOptions{
 		Filters: filters,
 	}
+
+	// mysql test
+	go func() {
+		db, err := sql.Open("mysql", fmt.Sprintf("%v:%v@tcp(%v)/%v", d.Config.Database.User, d.Config.Database.Password, d.Config.Database.Address, d.Config.Database.Name))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer db.Close()
+
+		for {
+			tables := make([]string, 0)
+			rows, err := db.Query("SHOW TABLES")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer rows.Close()
+			for rows.Next() {
+				var name string
+				err := rows.Scan(&name)
+				if err != nil {
+					log.Fatal(err)
+				}
+				tables = append(tables, name)
+			}
+			err = rows.Err()
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			res := make(map[string]Table)
+			for _, tableName := range tables {
+				rows, err := db.Query("SELECT * FROM " + tableName)
+				if err != nil {
+					log.Fatal(err)
+				}
+				defer rows.Close()
+				var table Table
+				columns, err := rows.Columns()
+				if err != nil {
+					log.Fatal(err)
+				}
+				table.Columns = columns
+				for rows.Next() {
+					fields := make([]string, len(columns))
+					pointers := make([]interface{}, len(columns))
+					for i := range fields {
+						pointers[i] = &fields[i]
+					}
+					err := rows.Scan(pointers...)
+					if err != nil {
+						log.Fatal(err)
+					}
+					table.Data = append(table.Data, fields)
+				}
+				err = rows.Err()
+				if err != nil {
+					log.Fatal(err)
+				}
+				res[tableName] = table
+			}
+
+			tcpMsg := TCPMessage{}
+			tcpMsg.Cmd = "event"
+			tcpMsg.Args = []string{"table"}
+			tcpMsg.ID = 0
+			tcpMsg.Data = &res
+
+			data, err := json.Marshal(&tcpMsg)
+			if err != nil {
+				log.Println("statCallback error:", err)
+				return
+			}
+			log.Info(data)
+
+			separator := []byte(string('\n'))
+
+			d.tcpMessages <- append(data, separator...)
+
+			time.Sleep(time.Duration(d.Config.Interval) * time.Second)
+		}
+	}()
 
 	//context.TODO, cancel := context.WithCancel(d.context.TODO)
 	//defer cancel()

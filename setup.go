@@ -25,7 +25,7 @@ func (d *Daemon) GetDockerBinary() error {
 	d.BinaryName = "docker-" + d.Version
 	log.Infof("looking for docker binary named: %s", d.BinaryName)
 
-	filename := path.Join("/home/gaocegege/go/src/github.com/docker/dockercraft/bin", d.BinaryName)
+	filename := path.Join("./bin", d.BinaryName)
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 
