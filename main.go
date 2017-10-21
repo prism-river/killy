@@ -22,12 +22,7 @@ func main() {
 	if *debugFlag {
 		log.SetLevel(log.DebugLevel)
 	}
-
-<<<<<<< HEAD
 	daemon := daemon.NewDaemon(*AddressFlag)
-=======
-	daemon := daemon.NewDaemon("10.1.4.12:9090")
->>>>>>> cad1ad3b4a7894e78fcb9c19a3a212e8ee416765
 	if err := daemon.Init(); err != nil {
 		log.Fatal(err.Error())
 		os.Exit(1)
