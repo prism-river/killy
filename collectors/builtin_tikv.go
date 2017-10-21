@@ -78,6 +78,7 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 	json.Unmarshal(data, &da)
 
 	var availAddress []string
+	var unavailAddress []string
 	var EveryTikvStatus []TikvStore
 	totalAvail := 0
 	totalcap := 0
@@ -88,6 +89,8 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 		state := d.Store.State
 		if state == 0 {
 			availAddress = append(availAddress, name)
+		} else {
+			unavailAddress = append(unavailAddress, name)
 		}
 		cap := d.Status.Capacity
 		kv.Capacity = cap
@@ -103,6 +106,7 @@ func (pc *PdTikvConnection) convertCollectData(data []byte, fail bool) (cd Colle
 	cd.Data["totalAvail"] = totalAvail
 	cd.Data["totalcap"] = totalcap
 	cd.Data["availAddress"] = availAddress
+	cd.Data["unavailAddress"] = unavailAddress
 	cd.Data["EveryTikvStatus"] = EveryTikvStatus
 	return
 }
