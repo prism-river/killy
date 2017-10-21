@@ -1,0 +1,5 @@
+@9Welcome to Killy!
+@9https://github.com/prism-river/killy
+@cWarning: Use on your local machine only
+@Killy is not safe for use on production servers
+@9Type /killy to use CLI commands!
