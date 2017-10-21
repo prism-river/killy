@@ -16,6 +16,7 @@ function NewActiveInstanceContainer()
     z = 0,
     name="",
     id="",
+    realname="",
     running=false,
     init=ActiveInstanceContainer.init,
     setInfos=ActiveInstanceContainer.setInfos,
@@ -28,7 +29,7 @@ function NewActiveInstanceContainer()
   return c
 end
 
-ActiveInstanceContainer = {displayed = false, x = 0, z = 0, name="",id="",imageRepo="",imageTag="",running=false}
+ActiveInstanceContainer = {displayed = false, x = 0, z = 0, name="",id="",realname="",imageRepo="",imageTag="",running=false}
 
 -- ActiveInstanceContainer:init sets ActiveInstanceContainer's position
 function ActiveInstanceContainer:init(x,z)
@@ -39,48 +40,11 @@ end
 
 -- ActiveInstanceContainer:setInfos sets ActiveInstanceContainer's id, name, imageRepo,
 -- image tag and running state
-function ActiveInstanceContainer:setInfos(id,name,running)
+function ActiveInstanceContainer:setInfos(id,name,realname,running)
   self.id = id
   self.name = name
+  self.realname = realname
   self.running = running
-end
-
--- ActiveInstanceContainer:destroy removes all blocks of the
--- container, it won't be visible on the map anymore
-function ActiveInstanceContainer:destroy(running)
-  local X = self.x+2
-  local Y = GROUND_MONITOR_ACTIVE_LEVEL+2
-  local Z = self.z+2
-  LOG("Exploding at X:" .. X .. " Y:" .. Y .. " Z:" .. Z)
-  local World = cRoot:Get():GetDefaultWorld()
-  World:BroadcastSoundEffect("random.explode", X, Y, Z, 1, 1)
-  World:BroadcastParticleEffect("hugeexplosion",X, Y, Z, 0, 0, 0, 1, 1)
-
-  -- if a block is removed before it's button/lever/sign, that object will drop
-  -- and the player can collect it. Remove these first
-
-  -- lever
-  digBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL+3,self.z+1)
-  -- signs
-  digBlock(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL+2,self.z-1)
-  digBlock(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL+2,self.z-1)
-  digBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL+2,self.z-1)
-  -- torch
-  digBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL+3,self.z+1)
-  --button
-  digBlock(UpdateQueue,self.x+2,GROUND_MONITOR_ACTIVE_LEVEL+3,self.z+2)
-
-  -- rest of the blocks
-  for py = GROUND_MONITOR_ACTIVE_LEVEL+1, GROUND_MONITOR_ACTIVE_LEVEL+4
-  do
-    for px=self.x-1, self.x+4
-    do
-      for pz=self.z-1, self.z+5
-      do
-        digBlock(UpdateQueue,px,py,pz)
-      end
-    end
-  end
 end
 
 -- ActiveInstanceContainer:display displays all ActiveInstanceContainer's blocks
@@ -171,13 +135,15 @@ function ActiveInstanceContainer:display(running)
   end
 
   setBlock(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
-  updateSign(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,string.sub(self.id,1,8),self.name,"", "",2)
+  updateSign(UpdateQueue,self.x+3,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,self.name,self.realname,"duitang.cn", "",2)
 
   -- Mem sign
   setBlock(UpdateQueue,self.x,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
+  self:updateMemSign("N/A")
 
   -- CPU sign
   setBlock(UpdateQueue,self.x+1,GROUND_MONITOR_ACTIVE_LEVEL + 2,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
+  self:updateCPUSign("N/A")
 end
 
 -- ActiveInstanceContainer:updateMemSign updates the mem usage
