@@ -15,15 +15,9 @@ type Collectd struct {
 	interval int
 }
 
-<<<<<<< HEAD
-func NewCollectd(daomen *Daemon) Collectd {
-	return Collectd{
-		daomen:   daomen,
-=======
 func NewCollectd(daemon *Daemon) *Collectd {
 	return &Collectd{
 		daemon:   daemon,
->>>>>>> cad1ad3b4a7894e78fcb9c19a3a212e8ee416765
 		exitChan: make(chan int),
 		interval: 1,
 	}
