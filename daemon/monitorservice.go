@@ -27,7 +27,6 @@ func (c *Collectd) Start() {
 	c.wg.Wrap(func() { c.GetAllTidb() })
 	c.wg.Wrap(func() { c.GetAllTikv() })
 	c.wg.Wrap(func() { c.GetAllPd() })
-	return nil
 }
 
 func (c *Collectd) Stop() {
@@ -39,7 +38,7 @@ func (c *Collectd) GetAllTidb() {
 	for {
 		select {
 		case <-ticker.C:
-			err := getAllTidb(c.daomen)
+			err := getAllTidb(c.daemon)
 			if err != nil {
 				log.Error(err)
 			}
@@ -57,7 +56,7 @@ func (c *Collectd) GetAllTikv() {
 	for {
 		select {
 		case <-ticker.C:
-			err := getAllTikv(c.daomen)
+			err := getAllTikv(c.daemon)
 			if err != nil {
 				log.Error(err)
 			}
@@ -75,7 +74,7 @@ func (c *Collectd) GetAllPd() {
 	for {
 		select {
 		case <-ticker.C:
-			err := getAllPd(c.daomen)
+			err := getAllPd(c.daemon)
 			if err != nil {
 				log.Error(err)
 			}
