@@ -115,7 +115,7 @@ func (d *Daemon) Serve() {
 		}
 		// no need to handle connection in a go routine
 		// goproxy is used as support for one single Lua plugin.
-		d.ctx.killyd.waitGroup.Wrap(func() { d.AlwaySend(conn) })
+		//d.ctx.killyd.waitGroup.Wrap(func() { d.AlwaySend(conn) })
 		d.ctx.killyd.waitGroup.Wrap(func() { d.handleConn(conn) })
 		select {
 		case <-d.ExitChan:
@@ -128,54 +128,54 @@ func (d *Daemon) Serve() {
 }
 
 func (d *Daemon) handleConn(conn net.Conn) {
-	separator := []byte(string('\n'))
-	buf := make([]byte, 256)
-	cursor := 0
-	for {
-		// resize buf if needed
-		if len(buf)-cursor < 256 {
-			buf = append(buf, make([]byte, 256-(len(buf)-cursor))...)
-		}
-		n, err := conn.Read(buf[cursor:])
-		if err != nil && err != io.EOF {
-			d.ctx.killyd.logf(LOG_FATAL, "conn read error: ", err)
-		}
-		cursor += n
-
-		// TODO(aduermael): check cNetwork plugin implementation
-		// conn.Read doesn't seem to be blocking if there's nothing
-		// to read. Maybe the broken pipe is due to an implementation
-		// problem on cNetwork plugin side
-		if cursor == 0 {
-			<-time.After(500 * time.Millisecond)
-			continue
-		}
-		// log.Println("TCP data read:", string(buf[:cursor]), "cursor:", cursor)
-
-		// see if there's a complete json message in buf.
-		// messages are separated with \n characters
-		messages := bytes.Split(buf[:cursor], separator)
-		// if one complete message and seperator is found
-		// then we should have len(messages) > 1, the
-		// last entry being an incomplete message or empty array.
-		if len(messages) > 1 {
-			shiftLen := 0
-			for i := 0; i < len(messages)-1; i++ {
-				// log.Println(string(messages[i]))
-
-				msgCopy := make([]byte, len(messages[i]))
-				copy(msgCopy, messages[i])
-
-				go d.handleMessage(msgCopy)
-				shiftLen += len(messages[i]) + 1
+	go func() {
+		separator := []byte(string('\n'))
+		buf := make([]byte, 256)
+		cursor := 0
+		for {
+			// resize buf if needed
+			if len(buf)-cursor < 256 {
+				buf = append(buf, make([]byte, 256-(len(buf)-cursor))...)
 			}
-			copy(buf, buf[shiftLen:])
-			cursor -= shiftLen
-		}
-	}
-}
+			n, err := conn.Read(buf[cursor:])
+			if err != nil && err != io.EOF {
+				d.ctx.killyd.logf(LOG_FATAL, "conn read error: ", err)
+			}
+			cursor += n
 
-func (d *Daemon) AlwaySend(conn net.Conn) {
+			// TODO(aduermael): check cNetwork plugin implementation
+			// conn.Read doesn't seem to be blocking if there's nothing
+			// to read. Maybe the broken pipe is due to an implementation
+			// problem on cNetwork plugin side
+			if cursor == 0 {
+				<-time.After(500 * time.Millisecond)
+				continue
+			}
+			// log.Println("TCP data read:", string(buf[:cursor]), "cursor:", cursor)
+
+			// see if there's a complete json message in buf.
+			// messages are separated with \n characters
+			messages := bytes.Split(buf[:cursor], separator)
+			// if one complete message and seperator is found
+			// then we should have len(messages) > 1, the
+			// last entry being an incomplete message or empty array.
+			if len(messages) > 1 {
+				shiftLen := 0
+				for i := 0; i < len(messages)-1; i++ {
+					// log.Println(string(messages[i]))
+
+					msgCopy := make([]byte, len(messages[i]))
+					copy(msgCopy, messages[i])
+
+					go d.handleMessage(msgCopy)
+					shiftLen += len(messages[i]) + 1
+				}
+				copy(buf, buf[shiftLen:])
+				cursor -= shiftLen
+			}
+		}
+	}()
+
 	for {
 		tcpMessage := <-d.tcpMessages
 		d.ctx.killyd.logf(LOG_DEBUG, "tcpMessage:", string(tcpMessage))
@@ -188,7 +188,6 @@ func (d *Daemon) AlwaySend(conn net.Conn) {
 }
 
 func (d *Daemon) handleMessage(message []byte) {
-
 	var tcpMsg TCPMessage
 
 	err := json.Unmarshal(message, &tcpMsg)
@@ -350,4 +349,16 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 			d.SendData.PdUnavailHosts = remove(d.SendData.PdUnavailHosts, data.Name)
 		}
 	}
+	tcpMsg := TCPMessage{}
+	tcpMsg.Cmd = "monitor"
+	tcpMsg.Args = []string{"all"}
+	tcpMsg.ID = 0
+	tcpMsg.Data = &d.SendData
+	sendD, err := json.Marshal(&tcpMsg)
+	if err != nil {
+		d.ctx.killyd.logf(LOG_ERROR, "statCallback error:", err)
+
+	}
+	separator := []byte(string('\n'))
+	d.tcpMessages <- append(sendD, separator...)
 }
