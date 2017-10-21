@@ -31,13 +31,12 @@ func New(opts *Options) (v *KILLYD, err error) {
 	if opts.Logger == nil {
 		opts.Logger = log.New(os.Stderr, opts.LogPrefix, log.Ldate|log.Ltime|log.Lmicroseconds)
 	}
-	daemon := NewDaemon(&context{v})
 	v = &KILLYD{
-		daemon:         daemon,
 		topicMap:       make(map[string]*Topic),
 		exitChan:       make(chan int),
 		pushinfluxChan: make(chan *collectors.CollectData, 100000000),
 	}
+	v.daemon = NewDaemon(&context{v})
 	opts.logLevel, err = lg.ParseLogLevel(opts.LogLevel, opts.Verbose)
 	if err != nil {
 		v.logf(LOG_FATAL, "%s", err)
