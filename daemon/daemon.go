@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net"
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
@@ -291,18 +289,6 @@ func (d *Daemon) handleMessage(message []byte) {
 	}
 }
 
-// execDockerCmd handles Docker commands
-func (d *Daemon) execDockerCmd(args []string) {
-	if len(args) > 0 {
-		log.Debugln("execDockerCmd:", d.BinaryName, args)
-		cmd := exec.Command(d.BinaryName, args...)
-		err := cmd.Run() // will wait for command to return
-		if err != nil {
-			log.Println("Error:", err.Error())
-		}
-	}
-}
-
 // Utility functions
 func splitRepoAndTag(repoTag string) (string, string) {
 
@@ -320,17 +306,4 @@ func splitRepoAndTag(repoTag string) (string, string) {
 	}
 
 	return repo, tag
-}
-
-func containerEventToTCPMsg(containerEvent ContainerEvent) ([]byte, error) {
-	tcpMsg := TCPMessage{}
-	tcpMsg.Cmd = "event"
-	tcpMsg.Args = []string{"containers"}
-	tcpMsg.ID = 0
-	tcpMsg.Data = &containerEvent
-	data, err := json.Marshal(&tcpMsg)
-	if err != nil {
-		return nil, errors.New("containerEventToTCPMsg error: " + err.Error())
-	}
-	return data, nil
 }

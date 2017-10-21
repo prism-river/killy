@@ -8,24 +8,24 @@ import (
 
 type Collectd struct {
 	wg       goutil.WaitGroupWrapper
-	daomen   *Daemon
+	daemon   *Daemon
 	exitChan chan int
 	interval int
 }
 
-func NewCollectd(daomen *Daomen) collectd {
+func NewCollectd(daemon *Daemon) *Collectd {
 	return &Collectd{
-		daomen:   daomen,
+		daemon:   daemon,
 		exitChan: make(chan int),
 		interval: 1,
 	}
-
 }
 
 func (c *Collectd) Start() error {
 	c.wg.Wrap(func() { c.GetAllTidb() })
 	c.wg.Wrap(func() { c.GetAllTikv() })
 	c.wg.Wrap(func() { c.GetAllPd() })
+	return nil
 }
 
 func (c *Collectd) Stop() {
