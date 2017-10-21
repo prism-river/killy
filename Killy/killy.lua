@@ -12,6 +12,8 @@ SignsToUpdate = {}
 -- in the "Containers" array to indicate that there is no container at an index
 EmptyContainerSpace = {}
 
+localPlayer = nil
+
 ----------------------------------------
 -- FUNCTIONS
 ----------------------------------------
@@ -98,6 +100,7 @@ function PlayerJoined(Player)
   -- enable flying
   Player:SetCanFly(true)
   LOG("player joined")
+  localPlayer = Player
   -- updateTableRecordContainer(1,"?", "??")
   -- updateTableRecordContainer(2,"!", "!!")
   -- updateActiveInstanceContainer(1,"??",true)
@@ -107,73 +110,7 @@ end
 --
 function PlayerUsingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, CursorY, CursorZ, BlockType, BlockMeta)
   LOG("Using block: " .. tostring(BlockX) .. "," .. tostring(BlockY) .. "," .. tostring(BlockZ) .. " - " .. tostring(BlockType) .. " - " .. tostring(BlockMeta))
-
-  -- lever: 1->OFF 9->ON (in that orientation)
-  -- lever
-  if BlockType == 69
-  then
-    local containerID = getStartStopLeverContainer(BlockX,BlockZ)
-    LOG("Using lever associated with container ID: " .. containerID)
-
-    if containerID ~= ""
-    then
-      -- stop
-      if BlockMeta == 1
-      then
-        Player:SendMessage("docker stop " .. string.sub(containerID,1,8))
-        SendTCPMessage("docker",{"stop",containerID},0)
-        -- start
-      else
-        Player:SendMessage("docker start " .. string.sub(containerID,1,8))
-        SendTCPMessage("docker",{"start",containerID},0)
-      end
-    else
-      LOG("WARNING: no docker container ID attached to this lever")
-    end
-  end
-
-  -- stone button
-  if BlockType == 77
-  then
-    local containerID, running = getRemoveButtonContainer(BlockX,BlockZ)
-
-    if running
-    then
-      Player:SendMessage("A running container can't be removed.")
-    else
-      Player:SendMessage("docker rm " .. string.sub(containerID,1,8))
-      SendTCPMessage("docker",{"rm",containerID},0)
-    end
-  end
 end
-
-
-function KillyCommand(Split, Player)
-  if table.getn(Split) > 0
-  then
-    LOG("Split[1]: " .. Split[1])
-
-    if Split[1] == "/killy"
-    then
-      if table.getn(Split) > 1
-      then
-        if Split[2] == "pull" or Split[2] == "create" or Split[2] == "run" or Split[2] == "stop" or Split[2] == "rm" or Split[2] == "rmi" or Split[2] == "start" or Split[2] == "kill"
-        then
-          -- force detach when running a container
-          if Split[2] == "run"
-          then
-            table.insert(Split,3,"-d")
-          end
-          table.remove(Split,1)
-          SendTCPMessage("docker",Split,0)
-        end
-      end
-    end
-  end
-
-  return true
-end
-
 
 function OnPlayerFoodLevelChange(Player, NewFoodLevel)
   -- Don't allow the player to get hungry

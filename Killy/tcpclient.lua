@@ -15,7 +15,7 @@ TCP_CLIENT = {
 
     -- list containers
     LOG("listing containers...")
-    SendTCPMessage("info",{"containers"},0)
+    -- SendTCPMessage("info",{"containers"},0)
   end,
 
   OnError = function (TCPConn, ErrorCode, ErrorMsg)
@@ -68,54 +68,90 @@ TCP_CLIENT = {
 -- SendTCPMessage sends a message over global
 -- tcp connection TCP_CONN. args and id are optional
 -- id stands for the request id.
-function SendTCPMessage(cmd, args, id)
+function SendTCPMessage(cmd, args, data,id)
   if TCP_CONN == nil
   then
     LOG("can't send TCP message, TCP_CLIENT not connected")
     return
   end
-  local v = {cmd=cmd, args=args, id=id}
+  local v = {cmd=cmd,args={args},data=data,id=id}
   local msg = json.stringify(v) .. "\n"
+  LOG(msg)
   TCP_CONN:Send(msg)
 end
 
 -- ParseTCPMessage parses a message received from
 -- global tcp connection TCP_CONN
 function ParseTCPMessage(message)
-  LOG("???")
   local m = json.parse(message)
   -- deal with table events
   if m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "table"
   then
     handleTableEvent(m.data)
   -- deal with monitor events
-  elseif  m.cmd == "monitor" and table.getn(m.args) > 0 and m.args[1] == "all"
+  elseif m.cmd == "monitor" and table.getn(m.args) > 0 and m.args[1] == "all"
   then
     handleMonitorEvent(m.data)
+  elseif m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "error"
+  then
+    localPlayer:SendMessage(cCompositeChat()
+		:AddTextPart(m.data,"@c"))
+  elseif m.cmd == "event" and table.getn(m.args) > 0 and m.args[1] == "result"
+  then
+    handleQueryEvent(m.data)
   end
 end
 
+function handleQueryEvent(event)
+  LOG("handleQueryEvent")
+  LOG(tostring(table.getn(event)))
+  for i=1, table.getn(event.data)
+  do
+    LOG(tostring(event.data[i]))
+    updateTableRecordContainer(event.data[i][1], "query", event.data[i])
+    localPlayer:SendMessage(cCompositeChat()
+		:AddTextPart(table.concat(event.data[i], " ")))
+  end
+  LOG("handleQueryEvent End")
+end
+
 function handleTableEvent(event)
-  -- TODO
   LOG("handleTableEvent")
   updateTableRecordContainer(0, "No-name", event[1].columns)
   for i=1, table.getn(event[1].data)
   do
-    updateTableRecordContainer(i, "No-name", event[1].data[i])
+    updateTableRecordContainer(event[1].data[i][1], "No-name", event[1].data[i])
   end
   LOG("handleTableEvent End")
 end
 
 function handleMonitorEvent(event)
-  -- TODO
   LOG("handleMonitorEvent")
-  for i=1, table.getn(event.tidbhosts)
+  for i=1, table.getn(event.TidbAvailHosts)
   do
-    updateActiveInstanceContainer(i, "TiDB Instance", event.tidbhosts[i], true)
+    LOG("TidbAvailHosts")
+    updateActiveInstanceContainer(event.TidbAvailHosts[i], "TiDB Instance", event.TidbAvailHosts[i], true)
   end
-  for i=1, table.getn(event.Tikvhosts)
+  for i=1, table.getn(event.TidbUnavailHosts)
   do
-    updateActiveInstanceContainer(event.Tikvhosts[i], "TiKV Instance", event.Tikvhosts[i], true)
+    LOG("TidbUnavailHosts")
+    updateActiveInstanceContainer(event.TidbUnavailHosts[i], "TiDB Instance", event.TidbUnavailHosts[i], false)
+  end
+  for i=1, table.getn(event.TikvAvailHosts)
+  do
+    updateActiveInstanceContainer(event.TikvAvailHosts[i], "TiKV Instance", event.TikvAvailHosts[i], true)
+  end
+  for i=1, table.getn(event.TikvUnavailHosts)
+  do
+    updateActiveInstanceContainer(event.TikvUnavailHosts[i], "TiKV Instance", event.TikvUnavailHosts[i], false)
+  end
+  for i=1, table.getn(event.PdAvailHosts)
+  do
+    updateActiveInstanceContainer(event.PdAvailHosts[i], "PD Instance", event.PdAvailHosts[i], true)
+  end
+  for i=1, table.getn(event.PdUnavailHosts)
+  do
+    updateActiveInstanceContainer(event.PdUnavailHosts[i], "PD Instance", event.PdUnavailHosts[i], false)
   end
   LOG("handleMonitorEvent End")
 end
