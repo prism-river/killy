@@ -66,6 +66,7 @@ func (v *KILLYD) Loadmeta(meta Meta) error {
 func (v *KILLYD) Main() {
 	v.daemon.Init()
 	v.waitGroup.Wrap(func() { v.daemon.Serve() })
+	v.waitGroup.Wrap(func() { v.daemon.StartMonitoringEvents() })
 	v.waitGroup.Wrap(func() { v.ToMinecraft() })
 	router := gin.Default()
 	debugcharts.GinDebugRouter(router)
