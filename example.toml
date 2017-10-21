@@ -6,7 +6,13 @@
 [topics]
 	[topics.tidb.tidb1]
 	address  = "10.1.4.12:10080"
-	interval = 1
+	mysqlAddress = "10.1.4.12:4000"
+        db = "book_store"
+        username = "root"
+        password = ""
+        interval = 1
+        mysqlInterval = 10
+
   
 	[topics.pd.pd1]
 	address = "10.1.4.200:23790"
