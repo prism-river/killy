@@ -8,4 +8,5 @@ go:
 go_import_path: github.com/prism-river/killy
 
 install:
+  - go get -v -d github.com/dustin/go-humanize
   - make
