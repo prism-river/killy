@@ -22,6 +22,8 @@ type Table struct {
 	Data    [][]string `json:"data"`
 }
 
+// TCPMessage defines what a message that can be
+// sent or received to/from LUA scripts
 type TCPMessage struct {
 	Cmd  string   `json:"cmd,omitempty"`
 	Args []string `json:"args,omitempty"`
@@ -30,6 +32,8 @@ type TCPMessage struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
+// TidbEvent is one kind of Data that can
+// be transported by a TCPMessage in the Data field.
 type TidbEvent struct {
 	TidbConnections  string
 	TidbAvailHosts   []string
@@ -156,7 +160,7 @@ func (d *Daemon) handleConn(conn net.Conn) {
 			// see if there's a complete json message in buf.
 			// messages are separated with \n characters
 			messages := bytes.Split(buf[:cursor], separator)
-			// if one complete message and seperator is found
+			// if one complete message and separator is found
 			// then we should have len(messages) > 1, the
 			// last entry being an incomplete message or empty array.
 			if len(messages) > 1 {

@@ -8,6 +8,7 @@ import (
 	goutil "github.com/hawkingrei/golang_util"
 )
 
+// Topic structure
 type Topic struct {
 	messageCount uint64
 
@@ -25,7 +26,7 @@ type Topic struct {
 	ctx        *context
 }
 
-// Topic constructor
+// NewTopic is Topic constructor
 func NewTopic(topicName string, ctx *context) *Topic {
 	t := &Topic{
 		name:       topicName,
@@ -37,6 +38,7 @@ func NewTopic(topicName string, ctx *context) *Topic {
 	return t
 }
 
+// Start Topic
 func (t *Topic) Start() {
 	//for {
 	//	switch {
@@ -45,11 +47,12 @@ func (t *Topic) Start() {
 	//}
 }
 
+// Exiting checks the exitFlag
 func (t *Topic) Exiting() bool {
 	return atomic.LoadInt32(&t.exitFlag) == 1
 }
 
-// this expects the caller to handle locking
+// GetChannel expects the caller to handle locking
 func (t *Topic) GetChannel(channelName string, channelsMeta ChannelsMeta) (channel *Channel) {
 	channel, ok := t.channelMap[channelName]
 	if !ok {
@@ -61,6 +64,7 @@ func (t *Topic) GetChannel(channelName string, channelsMeta ChannelsMeta) (chann
 	return channel
 }
 
+// Exit Topic
 func (t *Topic) Exit() error {
 	if !atomic.CompareAndSwapInt32(&t.exitFlag, 0, 1) {
 		return errors.New("exiting")
