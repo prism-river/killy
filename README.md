@@ -29,7 +29,7 @@
 ### Query in Minecraft
 
 <div align="center">
-	<img src="./presentation/images/querys.png" alt="" width="600">
+	<img src="./presentation/images/query.png" alt="" width="600">
 </div>
 
 ## Instructions
