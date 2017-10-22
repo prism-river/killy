@@ -12,6 +12,10 @@
 			"Rev": "b26d9c308763d68093482582cea63d69be07a0f0"
 		},
 		{
+			"ImportPath": "github.com/dustin/go-humanize",
+			"Rev": "77ed807830b4df581417e7f89eb81d4872832b72"
+		},
+		{
 			"ImportPath": "github.com/StackExchange/wmi",
 			"Rev": "ea383cf3ba6ec950874b8486cd72356d007c768f"
 		},
