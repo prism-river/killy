@@ -17,7 +17,7 @@
 ### TiDB Cluster Status
 
 <div align="center">
-	<img src="./presentation/images/status.png" alt="" width="600">
+	<img src="./presentation/images/status.gif" alt="" width="600">
 </div>
 
 ### Table Status
