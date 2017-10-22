@@ -1,4 +1,10 @@
-# TiDB craft
+<h1 align="center">
+        <br>
+        <img width="300" src="presentation/images/logo.png" alt="killy">
+        <br>
+        <h4 align="center">Play TiDB in Minecraft!</h4>
+        <br>
+</h1>
 
 [![Build Status](https://travis-ci.org/prism-river/killy.svg?branch=master)](https://travis-ci.org/prism-river/killy)
 [![Go Report Card](https://goreportcard.com/badge/github.com/prism-river/killy)](https://goreportcard.com/report/github.com/prism-river/killy)
@@ -51,3 +57,7 @@ cmd == 'monitor'
 #### 数据库
 
 cmd == 'event' and args == ['table']
+
+## Acknowledgments
+
+* Thanks [github.com/docker/dockercraft](https://github.com/docker/dockercraft) for its awesome idea.
