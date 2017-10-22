@@ -68,6 +68,12 @@ cmd == 'monitor'
 
 cmd == 'event' and args == ['table']
 
+## Architecture
+
+<div align="center">
+	<img src="./presentation/images/arch.png" alt="" width="600">
+</div>
+
 ## Acknowledgments
 
 * Thanks [github.com/docker/dockercraft](https://github.com/docker/dockercraft) for its awesome idea.
