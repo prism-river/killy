@@ -12,5 +12,7 @@ goproxy/goproxy
 dockercraft
 Server/
 killy
+Killy/
+killy-plugin/
 config.json
 KillyTest/
