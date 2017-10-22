@@ -20,11 +20,10 @@ Copy the config.example.json to config.json and edit it.
 
 ```bash
 cp -r config/* Server/
+git clone https://github.com/prism-river/killy-plugin Killy
 cp -r Killy Server/Plugins/
-mkdir bin
-ln -s /usr/bin/docker bin/docker-${DOCKER_VERSION}-ce
-go build
-./killy &
+make
+./build/killyd -config=example.toml
 cd ./Server
 ./Cuberite
 ```
