@@ -11,7 +11,7 @@
         username = "root"
         password = ""
         interval = 1
-        mysqlInterval = 10
+        mysqlInterval = 1
 
   
 	[topics.pd.pd1]

@@ -113,12 +113,12 @@ func (d *Daemon) Serve() {
 	ln, err := net.ListenTCP("tcp", tcpAddr)
 
 	if err != nil {
-		d.ctx.killyd.logf(LOG_FATAL, "listen tcp error:", err)
+		d.ctx.killyd.logf(LOG_FATAL, "listen tcp error: %v", err)
 	}
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			d.ctx.killyd.logf(LOG_FATAL, "tcp conn accept error:", err)
+			d.ctx.killyd.logf(LOG_FATAL, "tcp conn accept error: %v", err)
 		}
 		// no need to handle connection in a go routine
 		// goproxy is used as support for one single Lua plugin.
@@ -146,7 +146,7 @@ func (d *Daemon) handleConn(conn net.Conn) {
 			}
 			n, err := conn.Read(buf[cursor:])
 			if err != nil && err != io.EOF {
-				d.ctx.killyd.logf(LOG_FATAL, "conn read error: ", err)
+				d.ctx.killyd.logf(LOG_FATAL, "conn read error: %v", err)
 			}
 			cursor += n
 
@@ -185,10 +185,10 @@ func (d *Daemon) handleConn(conn net.Conn) {
 
 	for {
 		tcpMessage := <-d.tcpMessages
-		d.ctx.killyd.logf(LOG_DEBUG, "tcpMessage:", string(tcpMessage))
+		d.ctx.killyd.logf(LOG_DEBUG, "tcpMessage: %v", string(tcpMessage))
 		_, err := conn.Write(tcpMessage)
 		if err != nil {
-			d.ctx.killyd.logf(LOG_ERROR, "conn write error:", err)
+			d.ctx.killyd.logf(LOG_ERROR, "conn write error: %v", err)
 			break
 		}
 	}
@@ -199,7 +199,7 @@ func (d *Daemon) handleMessage(message []byte) {
 
 	err := json.Unmarshal(message, &tcpMsg)
 	if err != nil {
-		d.ctx.killyd.logf(LOG_ERROR, "json unmarshal error:", err)
+		d.ctx.killyd.logf(LOG_ERROR, "json unmarshal error: %v", err)
 		return
 	}
 	d.ctx.killyd.logf(LOG_DEBUG, "handleMessage: %#v \n", tcpMsg)
@@ -350,7 +350,7 @@ func (d *Daemon) ConversionMinecraft(data collectors.CollectData) {
 	tcpMsg.Data = &d.SendData
 	sendD, err := json.Marshal(&tcpMsg)
 	if err != nil {
-		d.ctx.killyd.logf(LOG_ERROR, "statCallback error:", err)
+		d.ctx.killyd.logf(LOG_ERROR, "statCallback error: %v", err)
 
 	}
 	separator := []byte(string('\n'))
@@ -366,52 +366,58 @@ func (d *Daemon) StartMonitoringEvents() {
 	}
 	defer db.Close()
 
+	ticker := time.NewTicker(time.Duration(d.Config.Interval) * time.Second)
 	for {
-		tables := make([]string, 0)
-		rows, err := db.Query("SHOW TABLES")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer rows.Close()
-		for rows.Next() {
-			var name string
-			err := rows.Scan(&name)
+		select {
+		case <-ticker.C:
+			tables := make([]string, 0)
+			rows, err := db.Query("SHOW TABLES")
 			if err != nil {
 				log.Fatal(err)
 			}
-			tables = append(tables, name)
-		}
-		err = rows.Err()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		res := make([]Table, 0)
-		for _, tableName := range tables {
-			table, err := sqlQuery(db, "SELECT * FROM "+tableName)
+			defer rows.Close()
+			for rows.Next() {
+				var name string
+				err := rows.Scan(&name)
+				if err != nil {
+					log.Fatal(err)
+				}
+				tables = append(tables, name)
+			}
+			err = rows.Err()
 			if err != nil {
 				log.Fatal(err)
 			}
-			table.Name = tableName
-			res = append(res, *table)
+
+			res := make([]Table, 0)
+			for _, tableName := range tables {
+				table, err := sqlQuery(db, "SELECT * FROM "+tableName)
+				if err != nil {
+					log.Fatal(err)
+				}
+				table.Name = tableName
+				res = append(res, *table)
+			}
+
+			tcpMsg := TCPMessage{}
+			tcpMsg.Cmd = "event"
+			tcpMsg.Args = []string{"table"}
+			tcpMsg.ID = 0
+			tcpMsg.Data = &res
+
+			data, err := json.Marshal(&tcpMsg)
+			if err != nil {
+				log.Println("table monitor error:", err)
+				return
+			}
+
+			separator := []byte(string('\n'))
+
+			d.tcpMessages <- append(data, separator...)
+		case <-d.ExitChan:
+			goto exit
 		}
-
-		tcpMsg := TCPMessage{}
-		tcpMsg.Cmd = "event"
-		tcpMsg.Args = []string{"table"}
-		tcpMsg.ID = 0
-		tcpMsg.Data = &res
-
-		data, err := json.Marshal(&tcpMsg)
-		if err != nil {
-			log.Println("table monitor error:", err)
-			return
-		}
-
-		separator := []byte(string('\n'))
-
-		d.tcpMessages <- append(data, separator...)
-
-		time.Sleep(time.Duration(d.Config.Interval) * time.Second)
 	}
+exit:
+	ticker.Stop()
 }
