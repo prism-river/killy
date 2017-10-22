@@ -11,6 +11,7 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/prism-river/killy)
 [![](https://img.shields.io/badge/docker-supported-blue.svg)](https://godoc.org/github.com/prism-river/killy)
 [![Libraries.io for GitHub](https://img.shields.io/librariesio/github/prism-river/killy.svg)](https://libraries.io/github/prism-river/killy)
+[![GitHub stars](https://img.shields.io/github/stars/prism-river/killy.svg?style=social&label=Stars)]()
 
 ## Features Preview
  
