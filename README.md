@@ -12,15 +12,25 @@
 [![](https://img.shields.io/badge/docker-supported-blue.svg)](https://godoc.org/github.com/prism-river/killy)
 [![Libraries.io for GitHub](https://img.shields.io/librariesio/github/prism-river/killy.svg)](https://libraries.io/github/prism-river/killy)
 
-## 需求
+## Features Preview
+ 
+### TiDB Cluster Status
 
-1. 监控数据的显示
-2. 执行 SQL
-3. 数据库表的显示
+<div align="center">
+	<img src="./presentation/images/status.png" alt="" width="500">
+</div>
 
-## Config
+### Table Status
 
-Copy the config.example.json to config.json and edit it.
+<div align="center">
+	<img src="./presentation/images/table.png" alt="" width="500">
+</div>
+
+### Query in Minecraft
+
+<div align="center">
+	<img src="./presentation/images/querys.png" alt="" width="500">
+</div>
 
 ## Instructions
 
