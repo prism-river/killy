@@ -8,6 +8,7 @@ function NewTableRecordContainer()
   c = {
     displayed = false,
     x = 0,
+    y = 0,
     z = 0,
     name="",
     id="",
@@ -23,6 +24,7 @@ end
 TableRecordContainer = {
     displayed = false, 
     x = 0,
+    y = 0,
     z = 0, 
     name="",
     id=""
@@ -50,49 +52,51 @@ function TableRecordContainer:display()
 
   local metaPrimaryColor = E_META_WOOL_LIGHTBLUE
   local metaSecondaryColor = E_META_WOOL_BLUE
+  local level = 0
 
-  if self.id == 0
+  if self.name == "column"
   then
-    metaPrimaryColor = E_META_WOOL_ORANGE
-    metaSecondaryColor = E_META_WOOL_RED
-  end
-
-  if self.name == "query"
+    LOG("!!!!!!!!!!!!!!!!!!!!")
+    LOG(self.x)
+    LOG(self.z)
+    TABLE_SIGNAL_OFFSET = 0
+    metaPrimaryColor = E_META_CONCRETE_GRAY
+    metaSecondaryColor = E_META_CONCRETE_GRAY
+    for i=1, table.getn(self.content)
+    do
+      -- add a block and add a sign to the blocks
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1,self.z,E_BLOCK_WOOL,metaPrimaryColor) 
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
+      updateSign(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1,self.z - 1,"", self.content[i], "", "",0)
+    end
+  elseif self.name == "query"
   then 
+    TABLE_SIGNAL_OFFSET = 0
+    local level = tonumber(self.id)
     metaPrimaryColor = E_META_WOOL_GREEN
+    for i=1, table.getn(self.content)
+    do
+      -- add a block and add a sign to the blocks
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z,E_BLOCK_WOOL,metaPrimaryColor) 
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
+      updateSign(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z - 1,"", self.content[i], "", "",0)
+    end
+  else
+    LOG("??????")
+    LOG(self.x)
+    LOG(self.z)
+    TABLE_SIGNAL_OFFSET = 0
+    local level = tonumber(self.name)
+    for i=1, table.getn(self.content)
+    do
+      -- add a block and add a sign to the blocks
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z,E_BLOCK_WOOL,metaPrimaryColor) 
+      setBlock(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z - 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_ZM)
+      updateSign(UpdateQueue,self.x+i,GROUND_TABLE_LEVEL + 1 + level,self.z - 1,"", self.content[i], "", "",0)
+    end
   end
 
   self.displayed = true
-
-  local counter = 1
-  for i=1, table.getn(self.content), 4
-  do
-    -- add a block and add a sign to the blocks
-    setBlock(UpdateQueue,self.x+1,GROUND_TABLE_LEVEL+counter,self.z + 1,E_BLOCK_WOOL,metaPrimaryColor) 
-    setBlock(UpdateQueue,self.x,GROUND_TABLE_LEVEL+counter,self.z + 1,E_BLOCK_WALLSIGN,E_META_CHEST_FACING_XM)
-    local first = self.content[i]
-    local second = self.content[i+1]
-    local third = self.content[i+2]
-    local fourth = self.content[i+3]
-    if first == nil
-    then
-      first = ""
-    end
-    if second == nil
-    then
-      second = ""
-    end
-    if third == nil
-    then
-      third = ""
-    end
-    if fourth == nil
-    then
-      fourth = ""
-    end
-    updateSign(UpdateQueue,self.x,GROUND_TABLE_LEVEL+counter,self.z + 1,first, second, third, fourth,0)
-    counter = counter + 1
-  end
 end
 
 -- TableRecordContainer:addGround creates ground blocks

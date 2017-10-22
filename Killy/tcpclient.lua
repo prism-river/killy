@@ -117,11 +117,12 @@ end
 
 function handleTableEvent(event)
   LOG("handleTableEvent")
-  updateTableRecordContainer(0, "No-name", event[1].columns)
+  updateTableRecordContainer(event[1].name, "column", event[1].columns)
   for i=1, table.getn(event[1].data)
   do
-    updateTableRecordContainer(event[1].data[i][1], "No-name", event[1].data[i])
+    updateTableRecordContainer(event[1].data[i][1], tostring(i), event[1].data[i])
   end
+  TABLE_SIGNAL_OFFSET = 10
   LOG("handleTableEvent End")
 end
 
