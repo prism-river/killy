@@ -17,19 +17,19 @@
 ### TiDB Cluster Status
 
 <div align="center">
-	<img src="./presentation/images/status.png" alt="" width="500">
+	<img src="./presentation/images/status.png" alt="" width="600">
 </div>
 
 ### Table Status
 
 <div align="center">
-	<img src="./presentation/images/table.png" alt="" width="500">
+	<img src="./presentation/images/table.png" alt="" width="600">
 </div>
 
 ### Query in Minecraft
 
 <div align="center">
-	<img src="./presentation/images/querys.png" alt="" width="500">
+	<img src="./presentation/images/querys.png" alt="" width="600">
 </div>
 
 ## Instructions
