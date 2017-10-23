@@ -75,6 +75,18 @@ cmd == 'event' and args == ['table']
 	<img src="./presentation/images/arch.png" alt="" width="600">
 </div>
 
+## Authors
+
+[See ./AUTHORS.md](./AUTHORS.md)
+
+## Contribution Guide
+
+Feel free to hack on killy! [CONTRIBUTING.md](./CONTRIBUTING.md) will help you to get involved into the development of killy.
+
+## ChangeLog
+
+[See ./CHANGELOG.md](./CHANGELOG.md)
+
 ## Acknowledgments
 
 * Thanks [github.com/docker/dockercraft](https://github.com/docker/dockercraft) for its awesome idea.
