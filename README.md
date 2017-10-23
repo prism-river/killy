@@ -6,12 +6,12 @@
         <br>
 </h1>
 
-[![Build Status](https://travis-ci.org/prism-river/killy.svg?branch=master)](https://travis-ci.org/prism-river/killy)
-[![Go Report Card](https://goreportcard.com/badge/github.com/prism-river/killy)](https://goreportcard.com/report/github.com/prism-river/killy)
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/prism-river/killy)
-[![](https://img.shields.io/badge/docker-supported-blue.svg)](https://godoc.org/github.com/prism-river/killy)
-[![Libraries.io for GitHub](https://img.shields.io/librariesio/github/prism-river/killy.svg)](https://libraries.io/github/prism-river/killy)
-[![GitHub stars](https://img.shields.io/github/stars/prism-river/killy.svg?style=social&label=Stars)]()
+<p align="center">
+    <a href="https://travis-ci.org/prism-river/killy"><img src="https://travis-ci.org/prism-river/killy.svg?branch=master"></a>
+	<a href="https://goreportcard.com/report/github.com/prism-river/killy"><img src="https://goreportcard.com/badge/github.com/prism-river/killy"></a>
+	<a href="https://godoc.org/github.com/prism-river/killy"><img src="https://img.shields.io/badge/godoc-reference-blue.svg"></a>
+	<a href="https://libraries.io/github/prism-river/killy"><img src="https://img.shields.io/librariesio/github/prism-river/killy.svg"></a>
+</p>
 
 ## Features Preview
  
