@@ -1,8 +1,5 @@
 # This is a TOML document. Boom.
-
-
-
-  # You can indent as you please. Tabs or spaces. TOML don't care.
+# You can indent as you please. Tabs or spaces. TOML don't care.
 [topics]
 	[topics.tidb.tidb1]
 	address  = "10.1.4.12:10080"

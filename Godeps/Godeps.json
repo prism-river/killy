@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/hawkingrei/veda",
+	"ImportPath": "github.com/prism-river/killy",
 	"GoVersion": "go1.9",
 	"GodepVersion": "v79",
 	"Packages": [
@@ -12,22 +12,12 @@
 			"Rev": "b26d9c308763d68093482582cea63d69be07a0f0"
 		},
 		{
-			"ImportPath": "github.com/dustin/go-humanize",
-			"Rev": "77ed807830b4df581417e7f89eb81d4872832b72"
-		},
-		{
 			"ImportPath": "github.com/StackExchange/wmi",
 			"Rev": "ea383cf3ba6ec950874b8486cd72356d007c768f"
 		},
 		{
-			"ImportPath": "github.com/garyburd/redigo/internal",
-			"Comment": "v1.1.0-6-g57f1cd7",
-			"Rev": "57f1cd7de6175c96b423e7ac2534ff2b39e2ef79"
-		},
-		{
-			"ImportPath": "github.com/garyburd/redigo/redis",
-			"Comment": "v1.1.0-6-g57f1cd7",
-			"Rev": "57f1cd7de6175c96b423e7ac2534ff2b39e2ef79"
+			"ImportPath": "github.com/dustin/go-humanize",
+			"Rev": "77ed807830b4df581417e7f89eb81d4872832b72"
 		},
 		{
 			"ImportPath": "github.com/gin-contrib/sse",
@@ -80,21 +70,6 @@
 		{
 			"ImportPath": "github.com/hawkingrei/golang_util",
 			"Rev": "ef5c63906f00c06ac574c81f9ed50a59ce01eb22"
-		},
-		{
-			"ImportPath": "github.com/influxdata/influxdb/client/v2",
-			"Comment": "v1.3.0rc1-51-ge014dd012",
-			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
-		},
-		{
-			"ImportPath": "github.com/influxdata/influxdb/models",
-			"Comment": "v1.3.0rc1-51-ge014dd012",
-			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
-		},
-		{
-			"ImportPath": "github.com/influxdata/influxdb/pkg/escape",
-			"Comment": "v1.3.0rc1-51-ge014dd012",
-			"Rev": "e014dd012d9a66cce540f4a021ee0a4a177960a7"
 		},
 		{
 			"ImportPath": "github.com/json-iterator/go",
