@@ -3,10 +3,9 @@ language: go
 sudo: required
 
 go:
-  - 1.9
+  - 1.9.x
 
 go_import_path: github.com/prism-river/killy
 
-install:
-  - go get -v -d github.com/dustin/go-humanize
+script:
   - make
