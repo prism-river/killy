@@ -74,7 +74,7 @@ func (c *Channel) StartChannel() {
 		select {
 		case <-ticker.C:
 			data, _ := mc.Start()
-			c.ctx.killyd.pushinfluxChan <- &data
+			c.ctx.killyd.pushMinecraftChan <- &data
 			continue
 		case <-c.exitChan:
 			goto exit
@@ -103,7 +103,7 @@ func (c *Channel) StartTikvChannel() {
 				c.ctx.killyd.logf(LOG_ERROR, "work(%s,%s): fail to collect data : %s", c.meta.Address, c.name, err.Error())
 				continue
 			}
-			c.ctx.killyd.pushinfluxChan <- &data
+			c.ctx.killyd.pushMinecraftChan <- &data
 			continue
 		case <-c.exitChan:
 			goto exit
