@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -47,7 +48,7 @@ func loadmeta(configFile string) (meta killyd.Meta, err error) {
 			return
 		}
 	}
-	return
+	return meta, errors.New("Config is empty")
 }
 
 func (p *program) Start() error {
@@ -59,35 +60,22 @@ func (p *program) Start() error {
 		fmt.Println(version.String())
 		os.Exit(0)
 	}
-
-	killyd, err := killyd.New(opts)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(0)
-	}
 	configFile := flagSet.Lookup("config").Value.String()
 	meta, err := loadmeta(configFile)
 	if err != nil {
 		log.Fatalf("ERROR: failed to load config file %s - %s", configFile, err.Error())
 	}
-	//for k,v := range meta.Topics {
-	//	fmt.Println("--")
-	//	fmt.Println(k)
-	//	for kk,vv := range v {
-	//		fmt.Println("-")
-	//		fmt.Println(kk)
-	//		fmt.Println(vv.Address)
-	//		fmt.Println(vv.Interval)
-	//	}
-	//}
-
+	killyd, err := killyd.New(opts)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(0)
+	}
 	err = killyd.Loadmeta(meta)
 	if err != nil {
 		log.Fatalf("ERROR: %s", err.Error())
 	}
 	killyd.Main()
 	p.killyd = killyd
-
 	return nil
 }
 
