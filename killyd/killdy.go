@@ -18,13 +18,13 @@ import (
 
 type KILLYD struct {
 	sync.RWMutex
-	daemon         *Daemon
-	Meta           Meta
-	opts           atomic.Value
-	waitGroup      goutil.WaitGroupWrapper
-	exitChan       chan int
-	pushinfluxChan chan *collectors.CollectData
-	topicMap       map[string]*Topic
+	daemon            *Daemon
+	Meta              Meta
+	opts              atomic.Value
+	waitGroup         goutil.WaitGroupWrapper
+	exitChan          chan int
+	pushMinecraftChan chan *collectors.CollectData
+	topicMap          map[string]*Topic
 }
 
 func New(opts *Options) (v *KILLYD, err error) {
@@ -32,9 +32,9 @@ func New(opts *Options) (v *KILLYD, err error) {
 		opts.Logger = log.New(os.Stderr, opts.LogPrefix, log.Ldate|log.Ltime|log.Lmicroseconds)
 	}
 	v = &KILLYD{
-		topicMap:       make(map[string]*Topic),
-		exitChan:       make(chan int),
-		pushinfluxChan: make(chan *collectors.CollectData, 100000000),
+		topicMap:          make(map[string]*Topic),
+		exitChan:          make(chan int),
+		pushMinecraftChan: make(chan *collectors.CollectData, 100000000),
 	}
 	v.daemon = NewDaemon(&context{v})
 	opts.logLevel, err = lg.ParseLogLevel(opts.LogLevel, opts.Verbose)
@@ -146,7 +146,7 @@ func (v *KILLYD) DeleteExistingTopic(topicName string) error {
 func (v *KILLYD) ToMinecraft() {
 	for {
 		select {
-		case c := <-v.pushinfluxChan:
+		case c := <-v.pushMinecraftChan:
 			v.daemon.ConversionMinecraft(*c)
 		case <-v.exitChan:
 			goto exit
