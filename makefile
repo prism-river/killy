@@ -1,7 +1,7 @@
 ### Makefile for killy
 GITTAG=`git rev-parse --short HEAD`
 BUILD_TIME=`date -u +%Y.%m.%d-%H:%M:%S%Z`
-VERSION=0.0.1
+VERSION=1.1
 GOPATH ?= $(shell go env GOPATH)
 GOFLAGS=-ldflags "-X "github.com/prism-river/killy/internal/version".GitCommit=${GITTAG} -X "github.com/prism-river/killy/internal/version".BuildTime=${BUILD_TIME} -X "github.com/prism-river/killy/internal/version".Version=${VERSION}"
 
